@@ -1,0 +1,220 @@
+\part{Contexte Professionnel, Écosystème Métier de l'Aérien}
+\label{part:contexte}
+
+\chapter{Présentation Organisationnelle, Rôle d'Architecte Systèmes d'Information}
+\label{chap:entreprise_role}
+
+\section{Présentation de l'Entreprise d'Accueil : SAS Everbloo}
+
+L'immersion professionnelle s'est déroulée au sein de la société \textbf{Everbloo} (SAS Everbloo), entreprise technologique et agence d'ingénierie logicielle fondée et dirigée par \textbf{Reouven SAMAMA} (CEO et Tech Lead), dont le siège social est établi au 40 Rue Alexandre Dumas dans le 11\textsuperscript{e} arrondissement de Paris. Positionnée sur le segment dynamique de la TravelTech et de la transformation numérique sur mesure, Everbloo conçoit, développe et commercialise des solutions logicielles complètes pour l'industrie du tourisme, de la mobilité d'affaires et des réseaux de distribution de voyages.
+
+Forte d'une expertise reconnue dans le développement d'applications web et mobiles à haute intensité transactionnelle, Everbloo collabore étroitement avec des acteurs majeurs du secteur, notamment le premier réseau d'agences de voyages indépendantes en France (\textbf{TourCom}) et développe des produits propriétaires phares tels que \textbf{« Agence et Vous »}, un carnet de voyage numérique temps réel interconnecté avec les systèmes d'information des voyagistes.
+
+\begin{figure}[H]
+\centering
+\includegraphics[height=1.2cm]{assets/logo_everbloo.png}
+\caption{Identité visuelle de l'entreprise d'accueil SAS Everbloo}
+\label{fig:logo_everbloo}
+\end{figure}
+
+Sur un marché de la distribution aérienne traditionnellement verrouillé par des infrastructures héritées lourdes et des coûts d'intégration prohibitifs, la proposition de valeur d'Everbloo repose sur l'agilité, la modularité et l'excellence logicielle. L'entreprise développe des architectures capables d'orchestrer en temps réel des flux de données hétérogènes tout en offrant aux utilisateurs finaux des interfaces ergonomiques, performantes et réactives.
+
+\section{La Plateforme Metis : Genèse, Écosystème Partenaire}
+
+Le produit technologique central développé au cours de cette mission est la plateforme \textbf{Metis} (\textit{Metis Digital}). Metis est un écosystème logiciel modulaire de distribution aérienne et un outil d'auto-réservation (\textit{Self-Booking Tool} - SBT) destiné aux agences de voyages et aux entreprises pour la gestion de leurs déplacements professionnels.
+
+\begin{figure}[H]
+\centering
+\includegraphics[height=1.2cm]{assets/logo_metis.png}
+\caption{Plateforme logicielle Metis Digital dédiée à la distribution B2B}
+\label{fig:logo_metis}
+\end{figure}
+
+Portée par une alliance d'experts cumulant une vaste expérience de l'industrie du tourisme et des technologies de distribution — avec l'équipe fondatrice de Metis Digital réunissant \textbf{Jérôme BENBIHI} (CEO Metis Digital, expert cloud et transformation digitale), \textbf{Bernard MOLLE} (Président Metis Digital, 30 ans d'expertise au sein des GDS) et \textbf{David MARCIANO} (COO Metis Digital, expert travel) —, la solution Metis équipe aujourd'hui près de cent agences de voyages à travers le monde.
+
+La mission technique de Metis consiste à unifier au sein d'une interface unique la recherche multi-critères, la comparaison tarifaire en direct, la retarification dynamique et l'émission automatisée de billets d'avion, en agrégeant simultanément les flux sessionnels des Global Distribution Systems (GDS Sabre, Amadeus) et les flux sans état de la norme IATA NDC (\textit{New Distribution Capability}).
+
+\section{Organisation des Équipes, Rôle d'Ingénierie et Dynamique Collaborative}
+
+L'organisation des développements repose sur une gouvernance agile articulée autour de trois niveaux de collaboration :
+\begin{itemize}
+    \item \textbf{Direction Générale, Technique et Décision Client :} \textbf{Reouven SAMAMA} assure la direction d'Everbloo en tant que CEO et Tech Lead, pilotant la cohérence technique d'ensemble. Les orientations stratégiques et les arbitrages majeurs sont validés en lien direct avec l'équipe fondatrice et cliente de \textbf{Metis Digital} — réunissant \textbf{Jérôme BENBIHI} (CEO), \textbf{Bernard MOLLE} (Président) et \textbf{David MARCIANO} (COO) —, premiers concernés par l'évolution de la solution.
+    \item \textbf{Pôle Product Management (Everbloo) :} Composé de trois \textit{Product Owners} — \textbf{Steeven ALIEL}, \textbf{Brenda SECK} et \textbf{Véronique DONG} —, ce pôle est le garant du cadrage fonctionnel, de la priorisation du backlog et de l'adéquation des développements avec les retours terrain des agences. Les Product Owners détiennent la décision finale sur l'acceptation des fonctionnalités.
+    \item \textbf{Pôle Développement et Ingénierie Logicielle :} Une équipe de développeurs travaillant en étroite synergie et à un niveau opérationnel équivalent, rassemblant \textbf{Jérémy SOLER} (\textbf{Apprenti — Architecte Systèmes d'Information}), les développeurs référents \textbf{Théodore KIM} et \textbf{Atilla TANSEL}, ainsi que les équipes d'ingénieurs réparties entre la \textbf{France} et la \textbf{Tunisie}.
+\end{itemize}
+
+\subsection{Positionnement au sein de l'Équipe et Missions d'Architecture}
+
+Intégré au cœur de l'équipe de développement tout au long des 38 mois d'immersion (d'octobre 2023 à novembre 2026), le rôle exercé combine le développement applicatif quotidien et l'étude des problématiques d'architecture logicielle :
+\begin{enumerate}
+    \item \textbf{Étude et Propositions d'Architecture :} Analyse des contraintes d'interopérabilité (GDS SOAP/EDIFACT vs NDC XML/JSON), formalisation de propositions techniques (patrons de conception, contrats API OpenAPI, modélisation des données) soumises à la validation du Tech Lead et des Product Owners.
+    \item \textbf{Développement et Implémentation Fullstack :} Co-développement actif sur l'ensemble des modules (connecteurs de recherche, moteurs de retarification, parsing des flux multi-devises, interfaces Vue 3 / Nuxt 3).
+    \item \textbf{Veille et Partage de Bonnes Pratiques :} Contribution aux revues de code entre pairs (\textit{Peer Code Reviews}), respect des standards de qualité (ESLint, Prettier, Conventional Commits) et enrichissement continu de la suite de tests automatisés (Mocha/Chai).
+\end{enumerate}
+
+Le volume d'activité consolidé témoigne de cet engagement soutenu au sein du collectif de développement : avec \textbf{1~554 commits} référencés sur la branche \texttt{development}, \textbf{+595~310 lignes de code produites}, \textbf{-402~680 lignes refactorisées} et \textbf{1~869 fichiers uniques impactés} sur quatre sous-projets, les réalisations présentées dans ce mémoire constituent le fruit d'un travail d'équipe approfondi.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+    scale=0.76, transform shape,
+    font=\sffamily,
+    headbox/.style={rectangle, rounded corners=6pt, draw=CobaltBlue, fill=CobaltBlue!10, text=NavyBlue, font=\small\bfseries, align=center, inner sep=6pt, line width=1.1pt, text width=12cm, drop shadow={opacity=0.10}},
+    pobox/.style={rectangle, rounded corners=6pt, draw=AccentGreen!80!black, fill=AccentGreen!10, text=NavyBlue, font=\small\bfseries, align=center, inner sep=6pt, line width=1.1pt, text width=12cm, drop shadow={opacity=0.10}},
+    devbox/.style={rectangle, rounded corners=6pt, draw=NavyBlue, fill=NavyBlue!5, text=NavyBlue, font=\small\bfseries, align=center, inner sep=7pt, line width=1.2pt, text width=12cm, drop shadow={opacity=0.12}},
+    polebox/.style={rectangle, rounded corners=5pt, draw=BorderGray, fill=LightGray!70, text=DarkSlate, font=\scriptsize, align=center, inner sep=4pt, line width=0.8pt, text width=2.8cm},
+    conn/.style={->, >=Stealth, thick, color=CobaltBlue, line width=1.2pt}
+]
+
+% 1. Direction & Clients
+\node[headbox] (dir) {
+    \textbf{Direction Générale, Technique \& Décision Client}\\[2pt]
+    \footnotesize\textbf{Reouven SAMAMA} — CEO \& Tech Lead (Everbloo)\\[1pt]
+    \footnotesize\textbf{Jérôme BENBIHI}, \textbf{Bernard MOLLE}, \textbf{David MARCIANO} — Direction Metis Digital (Clients)\\[1pt]
+    \tiny\textcolor{DarkSlate}{Orientations stratégiques, arbitrages budgétaires et décision finale}
+};
+
+% 2. Product Management
+\node[pobox, below=0.9cm of dir] (pos) {
+    \textbf{Pôle Product Management (Everbloo)}\\[2pt]
+    \footnotesize\textbf{Steeven ALIEL}, \textbf{Brenda SECK}, \textbf{Véronique DONG} — Product Owners\\[1pt]
+    \tiny\textcolor{DarkSlate}{Cadrage fonctionnel, priorisation du backlog, validation et recette des fonctionnalités}
+};
+
+% 3. Dev Team (All at same level)
+\node[devbox, below=0.9cm of pos] (devs) {
+    \textbf{Pôle Développement \& Ingénierie Logicielle}\\[3pt]
+    \normalsize\textbf{Jérémy SOLER}\hspace{0.4cm}\textbf{Théodore KIM}\hspace{0.4cm}\textbf{Atilla TANSEL}\\[2pt]
+    \footnotesize\textcolor{DarkSlate}{Apprenti Architecte SI\hspace{1.2cm}Développeur\hspace{1.8cm}Développeur}\\[2pt]
+    \scriptsize\textcolor{DarkSlate}{Équipe de développement distribuée (France \& Tunisie) — Propositions techniques, co-conception \& développement}
+};
+
+% 4. Modules
+\node[polebox, below=1.0cm of devs, xshift=-4.5cm] (p1) {\textbf{\texttt{api-aerial}}\\[2pt]Backend Node / Express\\[1pt]\tiny Agrégateur GDS/NDC};
+\node[polebox, right=0.3cm of p1] (p2) {\textbf{\texttt{front-reservation}}\\[2pt]Frontend Nuxt 3 / Vue 3\\[1pt]\tiny SBT / B2B Aérien};
+\node[polebox, right=0.3cm of p2] (p3) {\textbf{\texttt{front-dashboard}}\\[2pt]Frontend Nuxt 3 / Vuetify\\[1pt]\tiny Back-office Multi-POS};
+\node[polebox, right=0.3cm of p3] (p4) {\textbf{\texttt{api-dashboard}}\\[2pt]Backend Node / Keycloak\\[1pt]\tiny Habilitations Agences};
+
+% Connections: Direct Top-Down Flows
+\draw[conn] (dir.south) -- node[right=3pt, font=\tiny\bfseries\color{CobaltBlue}] {Orientations \& Priorités produit} (pos.north);
+\draw[conn] (pos.south) -- node[right=3pt, font=\tiny\bfseries\color{CobaltBlue}] {Spécifications, User Stories \& Arbitrage} (devs.north);
+
+% Connections: Devs to Modules
+\draw[conn] (devs.south) -- ++(0,-0.4) -| (p1.north);
+\draw[conn] (devs.south) -- ++(0,-0.4) -| (p2.north);
+\draw[conn] (devs.south) -- ++(0,-0.4) -| (p3.north);
+\draw[conn] (devs.south) -- ++(0,-0.4) -| (p4.north);
+
+\end{tikzpicture}
+\caption{Organigramme fonctionnel et gouvernance technique au sein d'Everbloo / Metis Digital}
+\label{fig:organigramme}
+\end{figure}
+
+\chapter{Écosystème Technologique, Architecture de la Plateforme Metis}
+\label{chap:techno_metis}
+
+\section{Écosystème Technologique, Outillage d'Ingénierie}
+
+Pour répondre aux exigences de scalabilité, de maintenabilité et de modularité, l'écosystème technique s'appuie sur une suite d'outils et de frameworks industriels de premier plan :
+
+\begin{itemize}
+    \item \textbf{Côté Serveur (Back-ends) :} Environnement d'exécution \textbf{Node.js} (avec contrainte de compatibilité ascendante v16/v20), framework web \textbf{Express.js}, ORM relationnel \textbf{Sequelize} (supportant les bases de données relationnelles MySQL/PostgreSQL avec gestion rigoureuse des migrations et \textit{seeders}), authentification fédérée via \textbf{Keycloak}, et documentation standardisée sous \textbf{OpenAPI / Swagger}.
+    \item \textbf{Côté Client (Front-ends) :} Framework d'application \textbf{Nuxt 3} (exploitant le moteur Vue 3 Composition API), langage fortement typé \textbf{TypeScript}, bibliothèque de composants graphiques \textbf{Vuetify 3}, et gestionnaire d'état réactif centralisé \textbf{Pinia}.
+    \item \textbf{Environnement de Développement \& Coordination :} Gestionnaire d'environnement hermétique et reproductible \textbf{Devenv} / \textbf{Pixi}, orchestrateur de processus locaux \textbf{Concurrently}, et gestion du monorepo articulée autour de sous-modules Git (\textit{Git Submodules}) avec scripts automatisés de synchronisation de branches (\texttt{clean-branches.sh}).
+    \item \textbf{Assurance Qualité \& Tests :} Framework de tests unitaires et d'assertions \textbf{Mocha} et \textbf{Chai} pour les composants d'API critiques, complétés par le framework de tests end-to-end \textbf{Playwright} sur l'application de réservation.
+\end{itemize}
+
+\section{Architecture Modulaire de la Plateforme Metis}
+
+La plateforme Metis est modélisée selon une architecture orientée services (SOA) découplant strictement la couche de présentation de la couche de calcul métier, tout en isolant les responsabilités administratives des opérations de réservation en temps réel.
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabularx}{\textwidth}{l p{0.28\textwidth} X r}
+\toprule
+\textbf{Composant} & \textbf{Type Applicatif} & \textbf{Rôle Fonctionnel \& Technique} & \textbf{Part Commits} \\
+\midrule
+\textbf{\texttt{api-aerial}} & Backend (Node.js / Express) & Moteur de distribution aérienne, normalisation GDS (Sabre/Amadeus) et flux NDC IATA, tarification, PNR. & \textbf{64.2\%} (997 commits) \\
+\addlinespace
+\textbf{\texttt{front-reservation}} & Frontend (Nuxt 3 / Vue 3) & Moteur de recherche et de réservation SBT/B2B, comparateur multi-compagnies, retarification, checkout. & \textbf{33.5\%} (520 commits) \\
+\addlinespace
+\textbf{\texttt{front-dashboard}} & Frontend (Nuxt 3 / Vue 3) & Back-office d'administration pour agences, paramétrage POS, profils et segments passifs. & \textbf{2.1\%} (33 commits) \\
+\addlinespace
+\textbf{\texttt{api-dashboard}} & Backend (Node.js / Express) & Habilitations administratives, profils marchands et devises de base. & \textbf{0.3\%} (4 commits) \\
+\bottomrule
+\end{tabularx}
+\caption{Répartition des rôles et des contributions sur les composants du monorepo Metis}
+\label{tab:repartition_composants}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+    scale=0.88, transform shape,
+    font=\sffamily,
+    layerbox/.style={rectangle, rounded corners=6pt, fill=#1, draw=BorderGray, line width=0.9pt, inner sep=8pt},
+    compbox/.style={rectangle, rounded corners=5pt, draw=CobaltBlue, fill=white, text=DarkSlate, font=\footnotesize, align=center, inner sep=6pt, line width=1pt, drop shadow={opacity=0.12}},
+    conn/.style={<->, >=Stealth, thick, color=CobaltBlue, line width=1.3pt},
+    extbox/.style={rectangle, rounded corners=4pt, draw=NavyBlue, fill=NavyBlue!6, text=NavyBlue, font=\scriptsize\bfseries, align=center, inner sep=5pt, line width=0.9pt}
+]
+
+% Layer 1: Presentation
+\node[compbox, text width=6.2cm] (front_res) {\textbf{\textcolor{NavyBlue}{\texttt{front-reservation} (Client SBT / B2B)}}\\[2pt]\scriptsize Nuxt 3, Vue 3 Composition API, Pinia, TypeScript\\[1pt]\tiny Tunnel d'achat, Reshopping dynamique, Comparateur};
+
+\node[compbox, text width=6.2cm, right=0.8cm of front_res] (front_dash) {\textbf{\textcolor{NavyBlue}{\texttt{front-dashboard} (Back-office Agence)}}\\[2pt]\scriptsize Nuxt 3, Vue 3, Vuetify 3, TypeScript\\[1pt]\tiny Paramétrage POS, Import/Export profils Sabre, Segments};
+
+\node[font=\scriptsize\bfseries\color{NavyBlue}, above=0.25cm of front_res.north west, anchor=south west] (title_pres) {\MakeUppercase{Couche Présentation (Frontends Nuxt 3 / TypeScript)}};
+
+\begin{scope}[on background layer]
+    \node[layerbox=CobaltBlue!8, fit=(title_pres) (front_res) (front_dash)] (layer_pres) {};
+\end{scope}
+
+% Layer 2: Business & Orchestration
+\node[compbox, text width=6.8cm, below=2.6cm of front_res] (api_aerial) {\textbf{\textcolor{NavyBlue}{\texttt{api-aerial} (Moteur Métier Aérien)}}\\[2pt]\scriptsize Node.js, Express.js, Sequelize ORM\\[1pt]\tiny Normalisation GDS/NDC, Matching Pax déterministe, Multi-devises};
+
+\node[compbox, text width=5.6cm, below=2.6cm of front_dash] (api_dash) {\textbf{\textcolor{NavyBlue}{\texttt{api-dashboard} (Administration)}}\\[2pt]\scriptsize Node.js, Express.js, Keycloak\\[1pt]\tiny Habilitations, Profils marchands, Devises agences};
+
+\node[font=\scriptsize\bfseries\color{NavyBlue}, above=0.25cm of api_aerial.north west, anchor=south west] (title_biz) {\MakeUppercase{Couche Métier \& Orchestration (Backends Node.js / Express)}};
+
+\begin{scope}[on background layer]
+    \node[layerbox=SkyBlue!10, fit=(title_biz) (api_aerial) (api_dash)] (layer_biz) {};
+\end{scope}
+
+% Layer 3: Providers
+\node[extbox, text width=3.8cm, below=2.6cm of api_aerial.south west, xshift=1.9cm] (sabre) {\textbf{Sabre GDS / NDC}\\[2pt]\tiny SOAP Web Services, Command, REST};
+
+\node[extbox, text width=3.8cm, right=0.6cm of sabre] (amadeus) {\textbf{Amadeus GDS}\\[2pt]\tiny EDIFACT, Web Services, PNR};
+
+\node[extbox, text width=4.2cm, right=0.6cm of amadeus] (ndc) {\textbf{Direct Connects NDC}\\[2pt]\tiny IATA XML/JSON (AF, BA, IB, A3, LH...)};
+
+\node[font=\scriptsize\bfseries\color{NavyBlue}, above=0.25cm of sabre.north west, anchor=south west] (title_ext) {\MakeUppercase{Couche Fournisseurs \& Systèmes Externes de Distribution}};
+
+\begin{scope}[on background layer]
+    \node[layerbox=NavyBlue!8, fit=(title_ext) (sabre) (amadeus) (ndc)] (layer_ext) {};
+\end{scope}
+
+% Inter-layer Connections
+\draw[conn] (layer_pres.south -| front_res) -- node[fill=white, font=\tiny\bfseries\color{CobaltBlue}, inner sep=2.5pt, draw=CobaltBlue!40, rounded corners=3pt] {HTTPS / REST JSON} (layer_biz.north -| front_res);
+\draw[conn] (layer_pres.south -| front_dash) -- node[fill=white, font=\tiny\bfseries\color{CobaltBlue}, inner sep=2.5pt, draw=CobaltBlue!40, rounded corners=3pt] {HTTPS / REST JSON} (layer_biz.north -| front_dash);
+\draw[conn] (api_aerial) -- node[fill=white, font=\tiny\bfseries\color{DarkSlate}, inner sep=2.5pt, draw=BorderGray, rounded corners=2pt] {RPC / Data Sync} (api_dash);
+
+\draw[conn] (layer_biz.south -| sabre) -- node[fill=white, font=\tiny\bfseries\color{CobaltBlue}, inner sep=2pt, draw=CobaltBlue!30, rounded corners=2pt] {SOAP} (layer_ext.north -| sabre);
+\draw[conn] (layer_biz.south -| amadeus) -- node[fill=white, font=\tiny\bfseries\color{CobaltBlue}, inner sep=2pt, draw=CobaltBlue!30, rounded corners=2pt] {EDIFACT} (layer_ext.north -| amadeus);
+\draw[conn] (layer_biz.south -| ndc) -- node[fill=white, font=\tiny\bfseries\color{CobaltBlue}, inner sep=2pt, draw=CobaltBlue!30, rounded corners=2pt] {XML / JSON} (layer_ext.north -| ndc);
+
+\end{tikzpicture}
+\caption{Flux de données et interactions inter-services au sein du système Metis}
+\label{fig:architecture_metis}
+\end{figure}
+
+\section{Transition Systémique vers la Problématique}
+
+Cette architecture distribuée, bien que théoriquement élégante, se heurte en pratique à des défis techniques majeurs :
+\begin{itemize}
+    \item L'incompatibilité structurelle entre le modèle transactionnel PNR d'un GDS (reposant sur un état sessionnel verrouillant les inventaires) et le modèle déconnecté des API NDC (reposant sur des offres éphémères identifiées par UUID).
+    \item La volatilité extrême des tarifs aériens en cours de navigation, provoquant des ruptures de prix lors du passage de l'écran de recherche à l'écran de paiement.
+    \item La complexité des calculs multi-devises asynchrones et la gestion rigoureuse des passagers et de leurs bagages associés sans génération de doublons ou de données orphelines.
+\end{itemize}
+
+Ces enjeux conduisent naturellement à la formulation précise et argumentée de la problématique d'ingénierie traitée dans le chapitre suivant.

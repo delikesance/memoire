@@ -1,0 +1,66 @@
+\documentclass[11pt,a4paper,oneside]{report}
+
+\input{preamble}
+
+\begin{document}
+
+% Page de garde
+\input{sections/00_page_de_garde}
+
+% Numérotation romaine pour les pages préliminaires
+\pagenumbering{roman}
+\setcounter{page}{1}
+
+% Remerciements
+\input{sections/00b_remerciements}
+
+% Abstract en anglais
+\input{sections/01_abstract}
+
+% Sommaire / Table des matières
+\cleardoublepage
+\pdfbookmark[0]{\contentsname}{contents}
+{
+\begin{spacing}{1.04}
+\tableofcontents
+\end{spacing}
+}
+\newpage
+
+% Liste des Figures et Liste des Tableaux
+\cleardoublepage
+\pdfbookmark[0]{\listfigurename}{figures}
+\listoffigures
+\vspace{1cm}
+\listoftables
+\newpage
+
+% Numérotation arabe pour le corps du document
+\pagenumbering{arabic}
+\setcounter{page}{1}
+
+% Introduction
+\input{sections/03_introduction}
+
+% Partie 1 : Contexte et Environnement
+\input{sections/04_partie1_contexte}
+
+% Formulation de la Problématique
+\input{sections/05_problematique}
+
+% Partie 2 : Réalisations et Réponses
+\input{sections/06_partie2_realisations}
+
+% Partie 3 : Démarche Réflexive et Analyse Critique
+\input{sections/07_partie3_demarche_reflexive}
+
+% Conclusion Générale
+\input{sections/08_conclusion}
+
+% Table des sigles et abréviations (en fin de mémoire)
+\input{sections/02_sigles_abreviations}
+
+% Glossaire et Bibliographie
+\input{sections/09_glossaire_bibliographie}
+
+\end{document}

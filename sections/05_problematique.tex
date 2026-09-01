@@ -1,0 +1,57 @@
+\chapter{Formulation, Contextualisation de la Problématique Centrale}
+\label{chap:problematique}
+
+\section{Énonciation du Questionnement d'Ingénierie}
+
+Dans la distribution aérienne B2B, les agences de voyages et les plateformes de réservation attendent trois garanties majeures : des temps de réponse rapides lors de la recherche, une exactitude stricte des tarifs affichés et une fiabilité totale lors de l'émission des billets.
+
+Cependant, faire cohabiter des systèmes GDS historiques (Sabre, Amadeus sous protocole EDIFACT / sessions avec état) et les API modernes NDC (flux XML/JSON sans état) génère des difficultés concrètes d'intégration technique. Face à ce contexte opérationnel, la problématique centrale de ce mémoire s'énonce ainsi :
+
+\begin{tcolorbox}[
+    colback=LightGray,
+    colframe=NavyBlue,
+    arc=4pt,
+    boxrule=1.2pt,
+    width=\textwidth
+]
+\begin{center}
+    \vspace{4pt}
+    \large\bfseries\textcolor{NavyBlue}{Problématique Centrale :}\\[8pt]
+    \large\itshape\color{DarkSlate}
+    « Comment garantir la cohérence transactionnelle et tarifaire d'un moteur de réservation aérien agrégeant des protocoles hybrides (GDS et NDC) ? »
+    \vspace{4pt}
+\end{center}
+\end{tcolorbox}
+
+\section{Justification Systémique, Contraintes d'Intégrité}
+
+Cette problématique s'articule autour de trois dimensions techniques et opérationnelles clés :
+
+\subsection{Dimension Architecturale : La Dualité des Modèles d'Échange}
+Les systèmes GDS traditionnels reposent sur une session avec état (\textit{stateful}) : la création d'un PNR nécessite plusieurs étapes séquentielles dépendantes les unes des autres. À l'inverse, les API NDC fonctionnent sans état (\textit{stateless}) : chaque offre dispose d'une durée de validité courte (souvent moins de 15 minutes) identifiée par un \texttt{OfferID}. Unifier ces deux approches dans un modèle de données pivot interne constitue le premier défi d'architecture.
+
+\subsection{Dimension Économique : La Volatilité des Tarifs et le Reshopping}
+Contrairement à un site e-commerce classique avec des stocks physiques, les prix des billets d'avion varient en temps réel selon les algorithmes de \textit{Revenue Management} des compagnies aériennes. Entre le moment où l'utilisateur sélectionne un vol et celui où il valide son paiement, le prix a pu augmenter ou la classe de réservation a pu être fermée. Il est donc indispensable d'intégrer une phase de retarification automatique (\textit{reshopping}) pour valider le tarif réel avant tout débit bancaire.
+
+\subsection{Dimension Financière et Administrative : Le Multi-Points de Vente}
+Une agence de voyages utilise souvent plusieurs points de vente (POS), chacun disposant de ses propres accès GDS, devises de facturation et règles comptables. L'architecture logicielle doit isoler ces configurations pour éviter des erreurs de conversion monétaire ou l'émission de segments passifs erronés entraînant des pénalités financières (\textit{Debit Memos} / ADM).
+
+\section{Hypothèses d'Ingénierie Logicielle}
+
+Pour répondre à cette problématique, quatre hypothèses de conception ont guidé mes développements :
+
+\begin{conceptbox}{Hypothèse 1 : Abstraction Canonique via le Design Pattern Adapter}
+L'utilisation d'une couche d'adaptateurs dédiés (\texttt{SabreAdapter.ts}, utilitaires de parsing) permet d'isoler la logique métier des formats spécifiques de chaque fournisseur (SOAP GDS vs JSON/XML NDC), rendant les connecteurs interchangeables sans modifier l'interface utilisateur.
+\end{conceptbox}
+
+\begin{conceptbox}{Hypothèse 2 : Traitement Asynchrone des Devises et Réconciliation Passager}
+La résolution asynchrone de la devise du point de vente dans les contrôleurs Node.js (\texttt{agencyCurrency}) et un algorithme strict de réconciliation des voyageurs (\texttt{matchesPaxRefId}) préviennent tout blocage ou décalage de données lors de la création de la commande (\texttt{jsonOrderCreateRQ}).
+\end{conceptbox}
+
+\begin{conceptbox}{Hypothèse 3 : Moteur de Retarification avec Validation Utilisateur}
+L'interception d'un changement de prix avant paiement, couplée à une notification claire dans l'interface et à la régénération immédiate de l'offre, évite les échecs silencieux et permet au client de confirmer son achat en toute transparence.
+\end{conceptbox}
+
+\begin{conceptbox}{Hypothèse 4 : Gestion Découplée des Points de Vente et Segments Passifs}
+L'administration dédiée des points de vente dans le back-office (\texttt{CreatePointDVente.vue}) et la séparation en base de données entre segments passifs Amadeus et Sabre garantissent la traçabilité comptable et protègent l'agence contre les risques de double facturation.
+\end{conceptbox}

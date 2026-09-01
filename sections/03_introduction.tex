@@ -1,0 +1,50 @@
+\chapter{Introduction Générale, Cadrage Stratégique}
+\label{chap:introduction}
+
+\section{Contexte Sectoriel de la Distribution Aérienne}
+
+L'industrie aéronautique commerciale et les technologies du voyage (\textit{TravelTech}) reposent sur des systèmes hautement interconnectés et contraints. Depuis plusieurs décennies, la réservation et la distribution mondiale de billets d'avion s'appuient sur les \textit{Global Distribution Systems} (GDS), principalement Sabre, Amadeus et Travelport. Ces plateformes historiques ont standardisé l'échange d'inventaires, d'horaires et de tarifs via le format textuel normé EDIFACT (\textit{Electronic Data Interchange for Administration, Commerce and Transport}).
+
+Aujourd'hui, ce paysage évolue sous l'impulsion de l'IATA (\textit{International Air Transport Association}) avec la norme \textbf{NDC} (\textit{New Distribution Capability}). Reposant sur des API web modernes (XML/JSON RESTful), NDC permet aux compagnies aériennes de distribuer directement leurs offres sans passer obligatoirement par les GDS. Les transporteurs peuvent ainsi proposer des tarifs dynamiques en temps réel et des services additionnels personnalisés (\textit{ancillaries} : choix du siège, bagages, repas).
+
+Pour les plateformes B2B comme \textbf{Metis}, éditées pour les agences de voyages et les entreprises (\textit{Self-Booking Tools} - SBT), cette coexistence crée un défi technique majeur. L'application ne peut pas choisir un seul canal : elle doit à la fois maintenir la compatibilité avec les flux GDS existants (requêtes SOAP, sessions avec état) et ingérer en direct les flux NDC hétérogènes de multiples compagnies aériennes (Air France-KLM, British Airways, Iberia, Lufthansa Group, Turkish Airlines).
+
+\section{Définitions Terminologiques Fondamentales}
+
+Pour bien appréhender les problématiques abordées dans ce mémoire, voici les définitions des concepts techniques et métiers clés :
+
+\begin{itemize}
+    \item \textbf{Global Distribution System (GDS) :} Système centralisé (Sabre, Amadeus) servant d'intermédiaire entre les compagnies aériennes et les distributeurs pour la disponibilité des vols, les tarifs et l'émission des billets.
+    \item \textbf{Norme IATA NDC (\textit{New Distribution Capability}) :} Standard XML/JSON permettant aux compagnies de commercialiser directement leurs offres en temps réel sans intermédiaire GDS.
+    \item \textbf{Dossier Passager (PNR - \textit{Passenger Name Record}) :} Dossier informatique unique (code alphanumérique à 6 caractères) regroupant les vols, les passagers, les tarifs et le statut de billetterie.
+    \item \textbf{Segments Passifs (\textit{Passive Segments}) :} Segments de réservation fictifs inscrits dans un GDS par une agence pour tracer la vente dans son logiciel comptable de \textit{back-office}, sans réserver de place physique auprès de la compagnie.
+    \item \textbf{Self-Booking Tool (SBT) :} Portail web permettant aux salariés d'entreprises de réserver leurs déplacements professionnels en respectant leur politique voyage interne.
+    \item \textbf{Retarification Dynamique (\textit{Reshopping / Reprice}) :} Vérification immédiate du prix et de la disponibilité auprès du fournisseur juste avant l'achat final pour éviter de facturer un tarif expiré.
+    \item \textbf{Point de Vente (POS - \textit{Point of Sale}) :} Configuration technique et commerciale propre à une agence (identifiants GDS, devises de facturation, taux de commission).
+\end{itemize}
+
+\section{Énonciation de la Problématique d'Ingénierie}
+
+Dans cet environnement, la plateforme \textbf{Metis} fait face à des flux très volatils : un tarif peut expirer en quelques minutes, un siège peut être réservé par un autre utilisateur en simultané, et les devises varient selon les agences. La moindre incohérence de données lors de la réservation (\textit{Order Creation}) entraîne un échec d'émission, des pertes de marge ou des blocages comptables.
+
+Dès lors, la problématique centrale de ce travail d'ingénierie s'énonce ainsi :
+
+\begin{tcolorbox}[colback=LightGray,colframe=NavyBlue,arc=3pt,boxrule=1pt]
+\begin{center}
+\large\bfseries\textcolor{NavyBlue}{
+« Comment garantir la cohérence transactionnelle et tarifaire d'un moteur de réservation aérien agrégeant des protocoles hybrides (GDS et NDC) ? »
+}
+\end{center}
+\end{tcolorbox}
+
+Ce travail explore concrètement la mise en place d'adaptateurs modulaires (Design Patterns), la fiabilisation des flux asynchrones Node.js, le calcul précis des devises (norme ISO 4217) et la gestion d'interfaces réactives avec Nuxt 3 et Vue 3.
+
+\section{Structure Argumentative du Mémoire}
+
+Le mémoire s'articule autour de trois parties :
+
+\begin{enumerate}
+    \item \textbf{Partie 1 : Contexte Professionnel, Écosystème Métier de l'Aérien :} Présentation de l'entreprise d'accueil Everbloo, positionnement de mon rôle d'apprenti architecte au sein de l'équipe de développement, description de la stack technique et formulation des hypothèses de travail.
+    \item \textbf{Partie 2 : Réalisations Techniques, Résolution de la Problématique :} Description détaillée des chantiers réalisés (1~554 commits sur la branche de développement) : intégration GDS/NDC, moteur de retarification en temps réel, optimisation de recherche, gestion multi-devises, back-office d'administration et tests automatisés.
+    \item \textbf{Partie 3 : Démarche Réflexive, Analyse Critique de l'Expérience :} Bilan critique des choix d'architecture, analyse des compromis et des limites techniques, pistes d'amélioration et retour d'expérience sur mon évolution vers le titre d'Expert en Ingénierie Informatique.
+\end{enumerate}

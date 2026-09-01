@@ -1,0 +1,174 @@
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french,english]{babel}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{geometry}
+\geometry{
+    a4paper,
+    top=28mm,
+    bottom=28mm,
+    left=27mm,
+    right=27mm,
+    headheight=15pt,
+    footskip=12mm
+}
+
+\usepackage{xcolor}
+\definecolor{NavyBlue}{HTML}{0A2540}
+\definecolor{CobaltBlue}{HTML}{0055B3}
+\definecolor{SkyBlue}{HTML}{20639B}
+\definecolor{DarkSlate}{HTML}{2D3748}
+\definecolor{LightGray}{HTML}{F7FAFC}
+\definecolor{BorderGray}{HTML}{E2E8F0}
+\definecolor{AccentGreen}{HTML}{2D9CDB}
+\definecolor{CodeBg}{HTML}{F8FAFC}
+\definecolor{CodeBorder}{HTML}{E2E8F0}
+\definecolor{AlertRed}{HTML}{E53E3E}
+
+\usepackage{graphicx}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{float}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,shapes.geometric,fit,calc,backgrounds,shadows}
+\usepackage{enumitem}
+\setlist[itemize]{leftmargin=*,itemsep=3pt,parsep=0pt}
+\setlist[enumerate]{leftmargin=*,itemsep=3pt,parsep=0pt}
+
+\usepackage{csquotes}
+\usepackage{setspace}
+\setstretch{1.15}
+
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0.5pt}
+\renewcommand{\footrulewidth}{0.4pt}
+\fancyhead[L]{\small\textcolor{DarkSlate}{\nouppercase{\leftmark}}}
+\fancyhead[R]{\small\textcolor{CobaltBlue}{\textbf{PROJET METIS}}}
+\fancyfoot[L]{\small\textcolor{DarkSlate}{ETNA — Titre d'Expert en Ingénierie Informatique}}
+\fancyfoot[R]{\small\textbf{\thepage}}
+
+\fancypagestyle{plain}{
+    \fancyhf{}
+    \renewcommand{\headrulewidth}{0pt}
+    \renewcommand{\footrulewidth}{0.4pt}
+    \fancyfoot[L]{\small\textcolor{DarkSlate}{ETNA — Titre d'Expert en Ingénierie Informatique}}
+    \fancyfoot[R]{\small\textbf{\thepage}}
+}
+
+\usepackage{titlesec}
+\titleformat{\part}[display]
+  {\normalfont\huge\bfseries\color{NavyBlue}\centering}
+  {\large\MakeUppercase{\partname}\ \thepart}
+  {10pt}
+  {\LARGE\color{NavyBlue}}
+
+\titleformat{\chapter}[hang]
+  {\normalfont\LARGE\bfseries\color{NavyBlue}}
+  {\thechapter.\ }
+  {10pt}
+  {}
+  [\vspace{4pt}{\color{BorderGray}\hrule height 0.8pt}]
+
+\titleformat{\section}[hang]
+  {\normalfont\Large\bfseries\color{NavyBlue}}
+  {\thesection\ }
+  {8pt}
+  {}
+
+\titleformat{\subsection}[hang]
+  {\normalfont\large\bfseries\color{NavyBlue}}
+  {\thesubsection\ }
+  {6pt}
+  {}
+
+\titleformat{\subsubsection}[hang]
+  {\normalfont\normalsize\bfseries\color{DarkSlate}}
+  {\thesubsubsection\ }
+  {4pt}
+  {}
+
+\titlespacing*{\chapter}{0pt}{18pt}{14pt}
+\titlespacing*{\section}{0pt}{14pt}{8pt}
+\titlespacing*{\subsection}{0pt}{10pt}{6pt}
+\titlespacing*{\subsubsection}{0pt}{8pt}{4pt}
+
+\usepackage{tcolorbox}
+
+\newtcolorbox{conceptbox}[2][]{
+    colback=LightGray,
+    colframe=NavyBlue,
+    coltitle=white,
+    title={\textbf{#2}},
+    fonttitle=\normalsize\bfseries,
+    arc=4pt,
+    boxrule=1.1pt,
+    top=10pt,
+    bottom=8pt,
+    left=10pt,
+    right=10pt,
+    #1
+}
+
+\newtcolorbox{metricbox}[2][]{
+    colback=LightGray,
+    colframe=CobaltBlue,
+    coltitle=white,
+    title={\textbf{#2}},
+    fonttitle=\normalsize\bfseries,
+    arc=4pt,
+    boxrule=1.1pt,
+    top=10pt,
+    bottom=8pt,
+    left=10pt,
+    right=10pt,
+    #1
+}
+
+\usepackage{listings}
+\lstdefinelanguage{TypeScript}{
+  keywords={typeof, new, true, false, catch, function, return, null, catch, switch, var, if, in, while, do, else, case, break, export, class, extends, public, private, static, implements, interface, let, const, async, await},
+  keywordstyle=\color{CobaltBlue}\bfseries,
+  ndkeywords={class, export, boolean, throw, implements, import, this, string, number, any},
+  ndkeywordstyle=\color{NavyBlue}\bfseries,
+  identifierstyle=\color{DarkSlate},
+  sensitive=true,
+  comment=[l]{//},
+  morecomment=[s]{/*}{*/},
+  commentstyle=\color{gray}\itshape,
+  stringstyle=\color{AccentGreen},
+  morestring=[b]"
+}
+
+\lstset{
+    language=TypeScript,
+    backgroundcolor=\color{CodeBg},
+    basicstyle=\ttfamily\footnotesize\color{DarkSlate},
+    breaklines=true,
+    breakatwhitespace=true,
+    captionpos=b,
+    frame=single,
+    rulecolor=\color{CodeBorder},
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+    numbersep=8pt,
+    tabsize=2,
+    showstringspaces=false,
+    keepspaces=true
+}
+
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=CobaltBlue,
+    citecolor=SkyBlue,
+    urlcolor=CobaltBlue,
+    pdftitle={MEMOIRE - Mémoire de validation entreprise 2e année - Jérémy Soler},
+    pdfauthor={Jérémy Soler},
+    pdfsubject={Architecture Logicielle et Distribution Aérienne Hybride GDS/NDC},
+    pdfkeywords={GDS, NDC, IATA, Microservices, Nuxt 3, Vue 3, Node.js, Express, TravelTech, SBT, Architecture Distribuée}
+}

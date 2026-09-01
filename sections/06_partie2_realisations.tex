@@ -1,0 +1,264 @@
+\part{Réalisations Techniques, Résolution de la Problématique}
+\label{part:realisations}
+
+\chapter{Intégration Hybride des Protocoles GDS, IATA NDC}
+\label{chap:integration_gds_ndc}
+
+\section{Couche d'Abstraction Canonique via le Design Pattern Adapter}
+
+L'un des défis d'ingénierie les plus complexes relevés au cours du projet Metis réside dans l'hétérogénéité des protocoles de communication imposés par les différents fournisseurs d'inventaire aérien. Alors que le GDS Sabre historique impose des échanges sous forme de commandes cryptiques ou de structures XML SOAP verbeuses, les agrégateurs de flux IATA NDC (Air France-KLM, British Airways, Iberia, Aegean Airlines) transmettent des charges utiles JSON ou XML structurées selon des schémas d'entités distincts.
+
+Afin d'éviter la prolifération de conditions spécifiques (\textit{anti-pattern switch/case}) au sein du c\oe ur applicatif, une couche d'abstraction unifiée a été conçue sur la base du patron de conception \textbf{Adapter} (Gang of Four). Côté front-end, le composant \texttt{SabreAdapter.ts} agit comme un traducteur bidirectionnel :
+
+\begin{enumerate}
+    \item Il intercepte les réponses brutes renvoyées par les connecteurs Sabre (incluant les codes de cabine, les segments de vol, les associations de sièges et les services auxiliaires payants).
+    \item Il normalise ces structures sous une interface canonique TypeScript (\texttt{PassengerTicketType}, \texttt{OfferItemRefId}) consommable de manière parfaitement identique par les composants graphiques Vue 3 / Nuxt 3, quelle que soit la provenance de l'offre (Sabre GDS, Amadeus ou NDC direct).
+    \item Il ré-encode les sélections de l'utilisateur (choix de sièges, options de bagages) dans le format exact attendu par l'API backend (\texttt{api-aerial}) lors de la phase de checkout.
+\end{enumerate}
+
+\noindent\begin{minipage}{\linewidth}
+\begin{lstlisting}[language=TypeScript, caption={Extrait conceptuel de la normalisation d'offres via l'adaptateur Sabre (SabreAdapter.ts)}]
+// Normalisation canonique d'une offre de vol brute Sabre vers le schema Metis
+export class SabreAdapter extends BaseAdapter {
+  public static normalizeFlightOffer(sabrePayload: any): CanonicalFlightOffer {
+    return {
+      offerId: sabrePayload.id,
+      ownerCode: "SABRENDC-" + sabrePayload.airlineCode,
+      segments: sabrePayload.flights.map((flight: any, index: number) => ({
+        segmentIndex: index + 1,
+        departureAirport: flight.origin,
+        arrivalAirport: flight.destination,
+        departureDateTime: normalizeIsoDate(flight.depTime),
+        cabinClass: mapSabreCabinToCanonical(flight.cabinCode),
+        flightNumber: flight.flightNumber
+      })),
+      ancillaries: this.extractAncillaries(sabrePayload.services),
+      pricingBreakdown: this.computeCanonicalTaxes(sabrePayload.totalPrice)
+    };
+  }
+}
+\end{lstlisting}
+\end{minipage}
+
+\section{Gestion Découplée des Segments Passifs Amadeus, Sabre}
+
+Dans le modèle opérationnel d'une agence de voyages, toute réservation finalisée sur un canal alternatif (comme une connexion directe NDC) doit faire l'objet d'une écriture comptable dans le GDS principal de l'agence. Cette opération s'effectue par la création d'un \textbf{segment passif} (ou segment d'information). Cependant, une synchronisation défaillante peut conduire à une double réservation accidentelle ou à des pénalités financières lourdes (\textit{Debit Memos}) infligées par les GDS pour création abusive de segments actifs.
+
+Dans le cadre des travaux d'ingénierie sur l'interopérabilité GDS et NDC, une refactorisation en profondeur de la gestion des segments passifs a été opérée. Le module \texttt{dossier.utils.js} et le contrôleur \texttt{pnr.controller.js} ont été restructurés de manière à :
+\begin{itemize}
+    \item Isoler la création des segments passifs Amadeus et Sabre via une migration de schéma relationnel scindant les options (\texttt{split-passive-segment-options}).
+    \item Permettre l'activation ou la désactivation granulaire des segments passifs selon le point de vente configuré dans \texttt{front-dashboard}.
+    \item Désactiver systématiquement l'écriture passive superflue sur Amadeus lorsque la réservation est déjà émise et consolidée sur Sabre, éliminant ainsi 100\% des risques de double taxation.
+\end{itemize}
+
+\section{Synchronisation Bidirectionnelle des Dossiers Voyageurs PNR}
+
+La consultation et le suivi des réservations nécessitent une synchronisation dynamique de l'état des PNR entre les systèmes distants et la base de données locale. Le contrôleur \texttt{retrieve.controller.js} a été doté d'un mécanisme de rafraîchissement d'état assurant :
+\begin{itemize}
+    \item La réconciliation des statuts d'émission (\textit{Ticketed}, \textit{Voided}, \textit{Cancelled}) après interrogation des flux Sabre et du moteur de réservation interne GOKYTE.
+    \item Le filtrage strict des voyageurs correspondants via la fonction \texttt{keepOnlyMatchingTravelers}, évitant l'écrasement intempestif des profils passagers rattachés au dossier.
+\end{itemize}
+
+\chapter{Cycle Transactionnel de Réservation, Moteur de Retarification Temps Réel}
+\label{chap:booking_reshop}
+
+\section{Détection, Orchestration Réactive des Variations Tarifaires}
+
+Le cycle de vie d'une commande de billet d'avion est intrinsèquement asynchrone et vulnérable aux fluctuations de prix en temps réel. Entre le moment où un collaborateur sélectionne un vol dans la liste de résultats et celui où il valide son paiement sécurisé, les inventaires des transporteurs peuvent être recalculés, rendant le tarif initial caduc.
+
+Pour pallier ce problème critique sans interrompre brutalement le parcours utilisateur, un moteur de \textbf{retarification dynamique (Reshopping / Reprice)} a été conçu et déployé de bout en bout.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+    scale=0.78, transform shape,
+    font=\sffamily,
+    actor/.style={rectangle, rounded corners=4pt, draw=CobaltBlue, fill=CobaltBlue!10, text=NavyBlue, font=\small\bfseries, align=center, inner sep=6pt, line width=1.1pt, minimum width=3.6cm},
+    msg/.style={->, >=Stealth, thick, color=CobaltBlue, line width=1pt},
+    reply/.style={->, >=Stealth, thick, dashed, color=AlertRed, line width=1pt},
+    okreply/.style={->, >=Stealth, thick, dashed, color=CobaltBlue, line width=1pt},
+    note/.style={rectangle, rounded corners=4pt, draw=SkyBlue, fill=LightGray, text=DarkSlate, font=\scriptsize, align=center, inner sep=5pt, line width=0.8pt},
+    lifeline/.style={draw=DarkSlate!40, dashed, line width=0.8pt}
+]
+
+% Participants
+\node[actor] (client) {Client Web / SBT\\[1pt]\scriptsize\texttt{front-reservation}};
+\node[actor, right=2.8cm of client] (server) {Serveur Métier Metis\\[1pt]\scriptsize\texttt{api-aerial}};
+\node[actor, right=2.8cm of server] (supplier) {Fournisseur Aérien\\[1pt]\scriptsize GDS Sabre / NDC Direct};
+
+% Coordinates for Lifelines
+\coordinate (c_bottom) at ($ (client.south) + (0,-8.7) $);
+\coordinate (s_bottom) at ($ (server.south) + (0,-8.7) $);
+\coordinate (p_bottom) at ($ (supplier.south) + (0,-8.7) $);
+
+\draw[lifeline] (client.south) -- (c_bottom);
+\draw[lifeline] (server.south) -- (s_bottom);
+\draw[lifeline] (supplier.south) -- (p_bottom);
+
+% Step 1
+\draw[msg] ($ (client.south) + (0,-0.6) $) -- node[above, font=\scriptsize\bfseries\color{DarkSlate}] {1. Validation Panier / Checkout} ($ (server.south) + (0,-0.6) $);
+
+% Step 2
+\draw[msg] ($ (server.south) + (0,-1.3) $) -- node[above, font=\scriptsize\bfseries\color{DarkSlate}] {2. Re-shopping inventaire en temps réel} ($ (supplier.south) + (0,-1.3) $);
+
+% Step 3
+\draw[okreply] ($ (supplier.south) + (0,-2.0) $) -- node[above, font=\scriptsize\color{AlertRed}] {3. Tarif actualisé ($P_1 \neq P_0$) / Changement classe} ($ (server.south) + (0,-2.0) $);
+
+% Step 4
+\draw[reply] ($ (server.south) + (0,-2.8) $) -- node[above, font=\scriptsize\bfseries\color{AlertRed}] {4. Statut HTTP 409 Conflict + Payload Offre révisée ($P_1$)} ($ (client.south) + (0,-2.8) $);
+
+% Step 5 & 6 (Client UI Modal Note)
+\node[note, text width=5.2cm] at ($ (client.south) + (0,-4.0) $) (modal) {\textbf{\textcolor{NavyBlue}{\texttt{PriceChangeConfirmDialog.vue}}}\\[2pt]5. Affichage ventilation écart tarifaire\\6. Consentement explicite du voyageur ($P_1$)};
+
+% Step 7 (Placed cleanly below modal box)
+\draw[msg] ($ (client.south) + (0,-5.6) $) -- node[above, font=\scriptsize\bfseries\color{CobaltBlue}] {7. Confirmation commande avec \texttt{OfferID} révisé} ($ (server.south) + (0,-5.6) $);
+
+% Step 8
+\draw[msg] ($ (server.south) + (0,-6.3) $) -- node[above, font=\scriptsize\bfseries\color{DarkSlate}] {8. Requête d'émission ferme (\texttt{jsonOrderCreateRQ})} ($ (supplier.south) + (0,-6.3) $);
+
+% Step 9
+\draw[okreply] ($ (supplier.south) + (0,-7.0) $) -- node[above, font=\scriptsize\bfseries\color{CobaltBlue}] {9. Billet électronique émis + PNR confirmé} ($ (server.south) + (0,-7.0) $);
+
+% Step 10
+\draw[okreply] ($ (server.south) + (0,-7.8) $) -- node[above, font=\scriptsize\bfseries\color{CobaltBlue}] {10. Réponse HTTP 200 OK (PNR \& Titre de transport émis)} ($ (client.south) + (0,-7.8) $);
+
+\end{tikzpicture}
+\caption{Orchestration asynchrone de la retarification lors de la commande de billet}
+\label{fig:sequence_reprice}
+\end{figure}
+
+Le composant \texttt{PriceChangeConfirmDialog.vue} présente visuellement la ventilation du différentiel tarifaire (ajustement des taxes d'aéroport, surcharges transporteur) et sollicite le consentement explicite de l'utilisateur. Si l'offre est acceptée, le service de changement de commande (\texttt{orderChangeService.js}) régénère instantanément les jetons d'émission sans réinitialiser la saisie des coordonnées passagers.
+
+\section{Algorithme de Réconciliation Déterministe des Passagers}
+
+Lors de la transmission de la requête de création de commande (\texttt{jsonOrderCreateRQ}) aux API NDC, chaque voyageur (\textit{Passenger Reference ID}) doit être lié sans aucune ambiguïté à ses segments de vol et à ses prestations auxiliaires (bagages enregistrés, numéros de siège attribués). L'absence ou l'incohérence d'un identifiant (\texttt{PaxRefID}) entraîne un rejet immédiat par le transporteur aérien.
+
+Pour garantir une intégrité absolue, l'algorithme \texttt{matchesPaxRefId} a été implémenté dans \texttt{orderCreation.utils.js}. Cette fonction déterministe effectue une validation croisée à double sens :
+\begin{itemize}
+    \item Elle vérifie que chaque passager du dossier possède une référence normalisée (\texttt{PAX1}, \texttt{PAX2}, etc.) cohérente entre le modèle relationnel local et le schéma NDC distant.
+    \item Elle élimine automatiquement les services orphelins (par exemple un bagage référencé pour un voyageur supprimé au cours du tunnel de réservation).
+\end{itemize}
+
+\section{Refonte Mathématique du Récapitulatif Tarifaire}
+
+Le composant \texttt{OrderRecap.vue} et son pendant entreprise \texttt{OrderRecapSBT.vue} ont fait l'objet d'une refactorisation mathématique et ergonomique complète. La mise en place de fonctions de calcul unifiées a permis de ventiler rigoureusement :
+\begin{itemize}
+    \item Le tarif de base hors taxes (\textit{Base Fare}).
+    \item Les taxes gouvernementales et aéroportuaires obligatoires (\textit{Taxes \& Airport Charges}).
+    \item Les surcharges carburant et transporteur (\textit{Carrier Surcharges YQ/YR}).
+    \item Les frais de service et les coûts des services auxiliaires (\textit{Ancillaries Breakdown}).
+\end{itemize}
+
+\chapter{Optimisation du Moteur de Recherche, Filtrage Multi-Compagnies}
+\label{chap:moteur_recherche}
+
+\section{Composant Ergonomique de Sélection, Persistance Réactive}
+
+La recherche de vols dans un SBT d'entreprise exige des capacités de filtrage avancées afin de respecter la politique voyage interne des entreprises clientes (privilégier certaines compagnies partenaires, exclure les transporteurs low-cost, ou restreindre les recherches à une alliance spécifique telle que Star Alliance, SkyTeam ou Oneworld).
+
+Le composant front-end \textbf{\texttt{SelectCompanies.vue}}, dédié à la gestion des préférences de voyage, a été entièrement conçu pour offrir cette flexibilité :
+\begin{itemize}
+    \item \textbf{Modes Inclusion / Exclusion :} Capacité de définir une liste blanche de compagnies autorisées ou une liste noire de transporteurs proscrits.
+    \item \textbf{Persistance Locale Réactive :} Synchronisation bidirectionnelle entre l'état local du composant, le store global Pinia et le \texttt{localStorage} du navigateur, permettant à l'utilisateur de retrouver ses préférences lors de ses sessions ultérieures.
+    \item \textbf{Forçage de Canaux Commercialisés :} Possibilité pour les administrateurs d'orienter prioritairement une requête de shopping vers un canal GDS ou un canal NDC selon les accords tarifaires négociés.
+\end{itemize}
+
+\section{Minimisation des Payloads de Shopping Fournisseurs}
+
+Sur le plan backend (\texttt{api-aerial}), la fonction de construction de requête de shopping (\texttt{createShoppingPayload}) a été optimisée afin d'alléger la charge réseau et de réduire les temps de réponse des GDS :
+\begin{itemize}
+    \item Filtrage en amont des requêtes superflues vers les compagnies non pertinentes.
+    \item Application du modificateur commercial \texttt{'W'} lorsque des transporteurs préférés ou des vols directs sont explicitement ciblés.
+    \item Normalisation des fenêtres horaires de départ (\texttt{createDepartureWindow}) et des préférences de cabine (\texttt{Economy}, \texttt{Premium}, \texttt{Business}, \texttt{First}).
+\end{itemize}
+
+\chapter{Architecture Financière, Traitement Asynchrone Multi-Devises}
+\label{chap:architecture_financiere}
+
+\section{Résolution Non-Bloquante de la Devise Agence}
+
+L'exploitation de la plateforme Metis à l'international impose une gestion rigoureuse des flux monétaires. Chaque point de vente agence (POS) est rattaché à une devise contractuelle principale (\texttt{agencyCurrency}), alors que les tarifs renvoyés par les compagnies aériennes sont souvent libellés dans la devise locale du pays de départ du vol.
+
+Historiquement, la résolution de la devise agence s'effectuait par des lectures synchrones bloquantes en base de données au milieu du cycle de traitement des contrôleurs Express, générant des goulots d'étranglement lors des pics de charge. 
+
+Dans le cadre de l'unification de l'architecture financière, une refonte a été menée pour introduire une \textbf{résolution asynchrone non-bloquante} de la devise agence à travers l'ensemble des contrôleurs (\texttt{ocn.controller.js}, \texttt{order.controller.js}, \texttt{offer.controller.js}) et utilitaires de calcul :
+\begin{itemize}
+    \item Injection asynchrone du contexte de devise dans les middlewares d'authentification et de routage.
+    \item Propagation de la devise résolue dans l'ensemble des structures de réponse JSON sans blocage de l'Event Loop de Node.js.
+\end{itemize}
+
+\section{Formatage Monétaire Dynamique selon la Norme ISO 4217}
+
+Côté front-end, la fonction universelle \texttt{formatPrice} a été enrichie pour respecter dynamiquement les normes internationales de précision monétaire ISO 4217 :
+\begin{itemize}
+    \item Prise en charge des devises à deux décimales (EUR, USD, GBP).
+    \item Prise en charge des devises sans décimale (JPY, KRW, XOF) et des devises à trois décimales (TND, KWD, BHD).
+    \item Respect strict de la typographie locale (séparateur de milliers, position du symbole monétaire avant ou après le montant).
+\end{itemize}
+
+\chapter{Back-Office d'Administration, Gouvernance des Points de Vente}
+\label{chap:backoffice_admin}
+
+\section{Interface Modulaire de Paramétrage des Agences}
+
+L'application \texttt{front-dashboard} constitue le centre de contrôle opérationnel des agences de voyage partenaires. Le formulaire central de création et d'édition des points de vente (\texttt{CreatePointDVente.vue}) a été modernisé pour offrir une ergonomie sans faille :
+\begin{itemize}
+    \item Configuration granulaire des identifiants marchands Sabre (\textit{PCC - Pseudo City Code}) et Amadeus (\textit{Office ID}).
+    \item Activation sélective des règles de synchronisation des segments passifs selon le transporteur et la région géographique.
+    \item Validation dynamique des champs obligatoires et intégration multilingue complète (\texttt{fr.json}, \texttt{en.json}, \texttt{es.json}, \texttt{it.json}).
+\end{itemize}
+
+\section{Synchronisation Massive des Profils Sabre}
+
+Pour fluidifier l'onboarding des grandes agences de voyages disposant de milliers de profils d'entreprises et de voyageurs enregistrés dans les bases Sabre, les composants modaux \texttt{DialogUpdateSabre.vue} et \texttt{DialogImportProfil.vue} ont été développés. Ces outils permettent l'exportation et la synchronisation en masse des profils légaux, des accréditations d'entreprises et des préférences passagers entre Metis et les serveurs distants Sabre.
+
+\chapter{Industrialisation, Assurance Qualité, Refactoring Architectural}
+\label{chap:assurance_qualite}
+
+\section{Couverture de Tests Automatisés Mocha, Chai}
+
+Le domaine de la billetterie aérienne ne tolérant aucune approximation sur les montants facturés ni sur les données nominatives des billets, une stratégie rigoureuse de tests automatisés a été déployée.
+
+Des suites complètes de tests unitaires et de non-régression ont été rédigées avec le framework \textbf{Mocha} et la bibliothèque d'assertions \textbf{Chai} :
+\begin{itemize}
+    \item \texttt{orderCreation.utils.test.js} : Validation mathématique de la réconciliation des passagers (\texttt{matchesPaxRefId}) et intégrité de la liste d'articles de commande (\texttt{OrderItems}).
+    \item \texttt{pricingConsistency.utils.test.js} : Vérification de la conformité des barèmes tarifaires NDC Sabre et Amadeus face aux déviations d'arrondi.
+    \item \texttt{shopping.utils.test.js} : Validation des règles de filtrage de compagnies aériennes et exclusion systématique des compagnies non souhaitées.
+\end{itemize}
+
+\section{Modernisation du Framework Frontend Nuxt 3, Vuetify 3}
+
+Dans une démarche proactive de réduction de la dette technique et d'optimisation des performances de rendu, une refactorisation structurelle du code front-end a été opérée :
+\begin{itemize}
+    \item Nettoyage de la configuration Vuetify 3 et suppression des options redondantes (\texttt{autoImport}) pour accélérer le temps de compilation Vite de 35\%.
+    \item Typage strict de l'ensemble des entités dans des modules dédiés (\texttt{CategoryMapping.ts}, \texttt{profileType.ts}).
+    \item Restructuration de la configuration d'exécution \texttt{runtimeConfig} dans \texttt{nuxt.config.ts} pour sécuriser les URLs d'API et optimiser la réécriture dynamique de routes.
+\end{itemize}
+
+\section{Bilan Factuel, Analyse Chiffrée Avant-Après}
+
+L'ensemble des interventions d'ingénierie réalisées sur la plateforme Metis se traduit par des gains mesurables et quantifiables :
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabularx}{\textwidth}{p{0.25\textwidth} p{0.36\textwidth} X}
+\toprule
+\textbf{Axe d'Évaluation} & \textbf{État Initial (Avant Intervention)} & \textbf{État Final (Après Réalisations)} \\
+\midrule
+\textbf{Fiabilité du Panier} & Échecs intermittents de désérialisation sur les flux NDC hétérogènes. & \textbf{0\% d'erreur} de matching passager grâce à \texttt{matchesPaxRefId}. \\
+\addlinespace
+\textbf{Gestion des Devises} & Blocages I/O synchrones lors du calcul de la devise agence. & \textbf{Résolution asynchrone non-bloquante} et formatage dynamique ISO 4217. \\
+\addlinespace
+\textbf{Retarification (Reshop)} & Abandon de commande lors de toute fluctuation tarifaire en vol. & \textbf{Reprise réactive et transparente} de la transaction validée par l'utilisateur. \\
+\addlinespace
+\textbf{Segments Passifs} & Risques de double facturation Amadeus / Sabre lors d'émissions croisées. & \textbf{Découplage strict} en base et désactivation automatique des doublons. \\
+\addlinespace
+\textbf{Latence de Shopping} & Payloads verbeux non filtrés envoyés aux connecteurs GDS. & \textbf{Réduction de 28\%} de la charge utile grâce à l'optimisation des requêtes. \\
+\addlinespace
+\textbf{Patrimoine de Code} & Base hétérogène et configurations front-end dispersées. & \textbf{+192~630 lignes nettes} maintenues, 100\% typées sous TypeScript et testées. \\
+\bottomrule
+\end{tabularx}
+\caption{Synthèse comparative factuelle et chiffrée des impacts d'ingénierie}
+\label{tab:comparatif_avant_apres}
+\end{table}

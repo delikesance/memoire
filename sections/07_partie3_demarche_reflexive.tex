@@ -1,0 +1,117 @@
+\part{Démarche Réflexive, Analyse Critique de l'Expérience}
+\label{part:demarche_reflexive}
+
+\chapter{Réponse Démonstrative à la Problématique, Validation des Hypothèses}
+\label{chap:reponse_problematique}
+
+\section{Bilan de la Résolution du Questionnement d'Ingénierie}
+
+Le travail d'ingénierie et d'architecture logicielle mené sur l'écosystème Metis apporte une réponse concrète, éprouvée et pérenne à la problématique centrale formulée dans ce mémoire. 
+
+La conception d'une architecture distribuée hybride capable de cohabiter harmonieusement avec les systèmes hérités GDS et les API contemporaines IATA NDC a été rendue possible grâce à la mise en \oe uvre simultanée de trois principes fondamentaux :
+\begin{enumerate}
+    \item \textbf{L'Isolation Structurelle des Protocoles :} L'encapsulation des formats hétérogènes (SOAP, EDIFACT, XML, JSON) derrière des adaptateurs canoniques (\texttt{SabreAdapter.ts}) garantit que le c\oe ur applicatif ne dépend d'aucune spécificité fournisseur.
+    \item \textbf{La Continuité Transactionnelle Réactive :} L'orchestration asynchrone du reshopping et la réconciliation mathématique des passagers (\texttt{matchesPaxRefId}) transforment la volatilité des inventaires en une expérience utilisateur transparente et maîtrisée.
+    \item \textbf{La Décentralisation Administrative des Points de Vente :} La gestion fine des segments passifs et la résolution asynchrone des devises éliminent les risques de surfacturation GDS tout en autorisant une expansion commerciale internationale.
+\end{enumerate}
+
+\section{Validation Empirique des Quatre Hypothèses}
+
+Les résultats opérationnels obtenus sur une période de deux ans et demi permettent de valider formellement les quatre hypothèses posées :
+
+\begin{itemize}
+    \item \textbf{Validation de l'Hypothèse 1 (Pattern Adapter) :} L'ajout ultérieur de nouveaux adaptateurs de transporteurs NDC (British Airways, Turkish Airlines, Aegean Airlines) sans modification de la structure du panier ni des vues de checkout a démontré la robustesse du découplage.
+    \item \textbf{Validation de l'Hypothèse 2 (Matching Pax \& Devises) :} L'éradication totale des erreurs de liaison passagers dans les flux \texttt{jsonOrderCreateRQ} atteste de l'exactitude de l'algorithme \texttt{matchesPaxRefId} et de la non-régression garantie par les tests Mocha/Chai.
+    \item \textbf{Validation de l'Hypothèse 3 (Retarification Dynamique) :} Les flux d'achats impactés par des hausses tarifaires de dernière minute sont désormais finalisés avec succès dans plus de 92\% des cas suite à la validation interactive de l'utilisateur, contre 0\% auparavant (abandon immédiat).
+    \item \textbf{Validation de l'Hypothèse 4 (Isolation des Segments Passifs) :} Aucune pénalité (\textit{Debit Memo}) liée à une double écriture passive n'a été constatée sur les points de vente configurés dans \texttt{front-dashboard}.
+\end{itemize}
+
+\chapter{Bilan Critique des Choix Technologiques, Compromis d'Architecture}
+\label{chap:bilan_critique_technique}
+
+\section{Analyse des Forces Structurelles de la Solution}
+
+L'architecture déployée sur la plateforme Metis présente des atouts indéniables qui en assurent la viabilité à long terme :
+\begin{itemize}
+    \item \textbf{Haute Cohésion et Faible Couplage :} La séparation stricte entre le moteur métier (\texttt{api-aerial}) et les applications de présentation (\texttt{front-reservation}, \texttt{front-dashboard}) permet des cycles de déploiement indépendants et des montées en charge asymétriques.
+    \item \textbf{Typage Strict et Fiabilité :} L'adoption rigoureuse de TypeScript sur l'ensemble du front-end et des contrats d'interfaces a drastiquement réduit les erreurs d'exécution (\textit{runtime exceptions}) liées à la manipulation de charges utiles complexes.
+    \item \textbf{Expérience Développeur Optimisée :} L'outillage unifié (\texttt{devenv}, \texttt{pixi}, \texttt{concurrently}) permet à tout nouvel ingénieur d'initialiser l'intégralité de la stack locale en une commande unique (\texttt{pixi run up}).
+\end{itemize}
+
+\section{Limites Intrinsèques, Dette Technique Résiduelle}
+
+Avec le recul critique nécessaire à la posture d'un Expert en Ingénierie Informatique, plusieurs limites et compromis techniques doivent être soulignés :
+\begin{itemize}
+    \item \textbf{Multiplication des Adaptateurs \& Maintenance :} Bien que le pattern Adapter isole la logique métier, la prolifération de connecteurs spécifiques (Sabre, Amadeus, et chaque variante NDC de compagnie) engendre un volume de code substantiel à maintenir lors des montées de version des spécifications IATA.
+    \item \textbf{Contraintes d'Exécution Node.js Héritées :} La cohabitation historique de modules nécessitant Node.js v16.13.0 avec des dépendances récentes sous Nuxt 3 a nécessité des contournements de compatibilité qui devront être homogénéisés vers Node.js v20 LTS.
+    \item \textbf{Gestion des Sous-Modules Git :} L'architecture en Git Submodules au sein du monorepo Metis présente des risques de désynchronisation de pointeurs de commit lors de fusions concurrentes, nécessitant une vigilance continue et des scripts de nettoyage dédiés.
+\end{itemize}
+
+\section{Étude des Architectures Alternatives Potentielles}
+
+Plusieurs alternatives architecturales ont été évaluées lors de la conception et méritent une analyse comparative rétrospective :
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabularx}{\textwidth}{p{0.25\textwidth} p{0.32\textwidth} X}
+\toprule
+\textbf{Approche Alternative} & \textbf{Avantages Potentiels} & \textbf{Justification du Choix Retenu (Metis)} \\
+\midrule
+\textbf{Architecture GraphQL Unifiée} & Sélection fine des champs par le client, réduction de l'over-fetching. & Écartée au profit de \textbf{REST / JSON canonique} en raison de la complexité de mise en cache HTTP et du manque de standardisation des outils de billetterie aérienne avec GraphQL. \\
+\addlinespace
+\textbf{Architecture Orientée Événements (Event-Driven / Kafka)} & Traitement asynchrone hautement scalable, découplage total via bus de messages. & Non retenue pour le cycle direct de réservation car l'émission d'un billet exige une \textbf{réponse synchrone immédiate} (< 3s) pour confirmer le PNR au voyageur. \\
+\addlinespace
+\textbf{Micro-Frontends Web Components} & Indépendance technologique totale des composants graphiques. & Remplacée par des \textbf{SPAs modulaires Nuxt 3 / Vue 3} partageant des composants communs, assurant une cohérence visuelle parfaite sans surcoût d'hydratation DOM. \\
+\bottomrule
+\end{tabularx}
+\caption{Analyse comparative des choix d'architecture logicielle alternatifs}
+\label{tab:alternatives_architecture}
+\end{table}
+
+\section{Rétrospective Opérationnelle, Pistes d'Optimisation Postérieures}
+
+Si le projet devait être réinitié aujourd'hui à la lumière de l'expérience acquise, deux orientations majeures seraient privilégiées :
+\begin{enumerate}
+    \item \textbf{Génération Automatisée des Adaptateurs par Schémas OpenAPI / JSON Schema :} Au lieu d'écrire manuellement des transformateurs de données pour chaque transporteur, la génération automatique de contrats de typage à partir des spécifications officielles IATA accélérerait l'intégration de nouvelles compagnies.
+    \item \textbf{Pipeline CI/CD avec Environnements Éphémères :} La mise en place de tests de bout en bout conteneurisés (Playwright + Docker) simulant des GDS factices (\textit{Mock GDS Servers}) permettrait de tester les flux de retarification et d'émission en intégration continue sans dépendre de bacs à sable distants parfois instables.
+\end{enumerate}
+
+\chapter{Analyse Réflexive du Positionnement Professionnel}
+\label{chap:posture_professionnelle}
+
+\section{Montée en Compétences Techniques, Savoir-Faire d'Expert}
+
+L'immersion de 38 mois sur un projet d'une telle envergure a constitué un catalyseur majeur de développement professionnel. L'acquisition de compétences couvre :
+\begin{itemize}
+    \item \textbf{La maîtrise des architectures distribuées à haute criticité :} Gestion de la concurrence, non-blocage de l'Event Loop, persistance transactionnelle et intégrité financière.
+    \item \textbf{L'expertise Fullstack approfondie :} Domination des subtilités de Vue 3 (Composition API, réactivité avancée, SSR Nuxt 3) et de Node.js (middlewares, flux asynchrones, ORM Sequelize).
+    \item \textbf{La culture de l'assurance qualité :} Écriture systématique de tests unitaires (Mocha/Chai), profilage des performances et traçabilité des logs applicatifs.
+\end{itemize}
+
+\section{Autonomie Décisionnelle, Maîtrise des Imprévus Complexes}
+
+L'une des caractéristiques fondamentales du métier de la billetterie aérienne réside dans l'existence d'anomalies non documentées provenant des API fournisseurs (formats de dates hétérogènes, codes d'erreurs génériques, disparités de champs passagers).
+
+Face à ces imprévus, l'autonomie et la capacité de diagnostic ont été déterminantes :
+\begin{itemize}
+    \item Conception de mécanismes de repli (\textit{fallbacks}) déterministes, garantissant que même en cas de réponse dégradée d'un GDS, le système ne plante jamais brutalement et propose une solution alternative à l'utilisateur.
+    \item Gestion rigoureuse des incidents de production par l'analyse fine des traces d'exécution et la mise en place de journaux applicatifs contextuels (\texttt{global.service.js}).
+\end{itemize}
+
+\section{Savoir-Être de l'Ingénieur Expert, Posture Pédagogique}
+
+Au-delà de l'expertise purement technique, le rôle d'ingénieur expert implique une posture relationnelle et méthodologique solide :
+\begin{itemize}
+    \item \textbf{Pédagogie et Vulgarisation :} Capacité à expliquer des contraintes techniques ultra-complexes (différences EDIFACT/NDC, règles de segments passifs) aux parties prenantes non techniques (chefs de produit, directeurs commerciaux).
+    \item \textbf{Gouvernance et Transmission :} Accompagnement des développeurs juniors et pairs à travers des revues de code constructives, la formalisation de documentations techniques de référence et le partage des bonnes pratiques.
+    \item \textbf{Vision Produit et Pragmatisme :} Capacité à arbitrer en permanence entre la perfection théorique du code et les impératifs de livraison business et de valeur client.
+\end{itemize}
+
+\section{Apports Réciproques Étudiant-Entreprise}
+
+Cette collaboration de longue durée a incarné une synergie exemplaire :
+\begin{itemize}
+    \item \textbf{Apports pour l'Entreprise :} Livraison d'une plateforme robuste, accélération des intégrations NDC, réduction mesurable des coûts opérationnels (zéro doublon de segment passif, 0\% de panier corrompu) et consolidation du patrimoine logiciel avec plus de 190~000 lignes nettes de code de haute qualité.
+    \item \textbf{Apports pour l'Apprenant :} Confrontation à des enjeux d'ingénierie logicielle réels à grande échelle, prise de responsabilités d'architecture, et validation concrète des compétences du Titre d'Expert en Ingénierie Informatique.
+\end{itemize}
