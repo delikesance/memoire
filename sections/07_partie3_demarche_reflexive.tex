@@ -1,59 +1,47 @@
 \part{Bilan et retours d'expérience}
 \label{part:demarche_reflexive}
 
-\chapter{Ce que les hypothèses n'ont pas couvert}
+\chapter{Limites observées en production}
 \label{chap:reponse_problematique}
 
 \section{Bilan après 38 mois}
 
-Après 38 mois sur Metis, le bilan des choix d'architecture est mitigé --- et c'est normal. Faire cohabiter GDS et NDC n'était pas qu'un problème d'intégration : chaque décision a pesé entre propreté du code, contraintes transporteurs et réalité économique des agences.
+\noindent Après 38 mois sur Metis, plusieurs briques ont dû être reprises après mise en production. Les points suivants sont ceux qui ont le plus dévié du design initial.
 
-Sur le terrain, \texttt{SabreAdapter.ts} a isolé le frontend des formats compagnies, la modale de retarification a limité les abandons sur hausses de prix, et \texttt{matchesPaxRefId} a nettoyé les données passagers avant \texttt{OrderCreate}. Aucune de ces briques n'a tenu du premier coup. Ci-dessous, les angles morts dans l'ordre où ils ont vraiment fait mal --- pas dans l'ordre du chapitre précédent.
+\section{Compromis forcés en production}
 
-\section{Ce qui a cassé ou forcé un compromis}
+\subsection{Homonymes}
 
-\subsection{Homonymes et \texttt{matchesPaxRefId}}
-
-\texttt{matchesPaxRefId} a fait descendre le rejet NDC sous 0,1\,\% : accents nettoyés, bébés liés aux adultes, bagages orphelins purgés.
-
-Angle mort : père et fils \texttt{DUPONT/JEAN} sur le même dossier. L'algo s'appuyait d'abord sur la clé textuelle normalisée ; tous les bagages partaient sur le premier passager. Rejet à l'émission.
-
-Correctif : combiner identité textuelle et index de position (\texttt{travelerIndex}) issu de Pinia, plus un warning UI quand deux voyageurs partagent exactement le même nom et prénom.
+Sur un dossier familial, père et fils \texttt{DUPONT/JEAN} ont reçu tous les bagages sur le premier passager. L'appairage s'appuyait sur la clé textuelle normalisée. La compagnie a rejeté à l'émission. On a ajouté l'index de position (\texttt{travelerIndex}) et un warning UI, mais le cas reste fragile si l'ordre de saisie change.
 
 \subsection{Segments passifs vs ERP agences}
 
-Le découplage POS en base a éliminé les ADM pour double écriture Sabre/Amadeus sur plus de deux ans. Côté agences, effet de bord : Gestour, IEnterprise, TravelCloud ont des imports très rigides. Certains ERP refusent le PNR passif si la ligne comptable ne colle pas à leur convention, ou si la devise ne matche pas leur passerelle.
+Le découplage POS en base a éliminé les ADM pour double écriture Sabre/Amadeus sur plus de deux ans. Côté agences, Gestour, IEnterprise et TravelCloud ont des imports très rigides : certains refusent le PNR passif si la ligne comptable ne colle pas à leur convention, ou si la devise ne matche pas leur passerelle.
 
-Solution retenue : table d'exceptions / règles par agence en PostgreSQL. Efficace commercialement, dette claire --- à maintenir à chaque montée de version ERP.
+Nous avons ajouté une table d'exceptions / règles par agence en PostgreSQL. Les comptables peuvent importer ; l'équipe doit mettre à jour la table quand un ERP change de format.
 
 \subsection{\texttt{CanonicalFlightOffer} et les Branded Fares}
 
-Sur le papier, un modèle pivot unique était séduisant : n'importe quel SOAP Sabre ou JSON NDC devient une structure commune.
+L'idée du modèle pivot était de transformer n'importe quel SOAP Sabre ou JSON NDC en une structure commune. Pour environ 90\,\% des vols simples (aller-retour économique), ça tient. Dès Turkish Airlines ou Lufthansa Group et leurs \textit{Branded Fares}, les offres collent au billet des services non dissociables (bagage 23\,kg sur le premier tronçon seulement, sièges limités, conditions d'annulation hybrides).
 
-Pour environ 90\,\% des vols simples (aller-retour économique), ça tient. Dès Turkish Airlines ou Lufthansa Group et leurs \textit{Branded Fares}, ça se complique : bagage 23\,kg sur le premier tronçon seulement, sièges limités aux rangées arrière, conditions d'annulation hybrides.
-
-Forcer ces cas dans une interface TypeScript stricte alourdissait le modèle ou faisait perdre de l'info. Contournement : \texttt{rawCarrierMetadata: Record<string, any>}. Ça casse la « pureté » du patron Adaptateur ; ça affiche les spécificités transporteur sans casser le typage du reste. Workaround assumé.
+Étendre l'interface TypeScript à chaque particularité alourdissait le modèle. Le champ \texttt{rawCarrierMetadata: Record<string, any>} a servi d'échappatoire pour afficher ces spécificités sans casser le typage du reste.
 
 \subsection{Le 409 ne sauve pas tous les paniers}
 
-L'interception HTTP 409 avec \texttt{PriceChangeConfirmDialog.vue} affiche 92\,\% de réussite. Le chiffre mérite du contexte.
+L'interception HTTP 409 avec \texttt{PriceChangeConfirmDialog.vue} couvre surtout les écarts de taxes modestes ou le basculement sur la sous-classe immédiatement supérieure. Quand le vol est fermé ou que le saut dépasse le plafond de politique de voyage, l'utilisateur refuse et relance une recherche.
 
-Ça marche sur des écarts modérés (taxes +5 à +30\,€, ou bascule sur la sous-classe immédiatement supérieure). Deux cas où la modale ne sauve rien : vol fermé net par le \textit{Revenue Management} (0 siège) ; saut massif (ex. +350\,€ au-delà du plafond de politique de voyage).
-
-Autre bug en test : après refus, Pinia gardait temporairement les identifiants de l'ancienne offre. Correctif : \texttt{useBookingStore().\$reset()} à chaque fermeture de modale.
+En test, après un refus, Pinia gardait parfois les identifiants de l'ancienne offre. \texttt{useBookingStore().\$reset()} à la fermeture de modale a coupé ce cas.
 
 \chapter{Incidents de production et choix d'architecture}
 \label{chap:bilan_critique_technique}
 
 \section{OAuth2 : refresh silencieux et file d'attente}
 
-La gestion des jetons OAuth2 a été l'un des points les plus piégeux du projet.
-
 Entre recherche, choix des vols et saisie des voyageurs, plusieurs minutes s'écoulent. Les access tokens expirent souvent en 15 à 30 minutes. Si l'expiration tombe pendant des appels parallèles (disponibilités, bagages), une implémentation naïve enchaîne des HTTP 401 et déconnecte l'utilisateur en plein checkout.
 
-Correctif : intercepteur Axios avec renouvellement silencieux et file FIFO (listing \ref{lst:oauth2interceptor}). Au premier 401, \texttt{isRefreshing} passe à \texttt{true} et un seul refresh part. Les autres requêtes rejoignent \texttt{failedQueue}. Nouveau token disponible : file vidée, headers mis à jour, requêtes rejouées sans intervention utilisateur.
+L'intercepteur Axios (listing \ref{lst:oauth2interceptor}) pose un verrou \texttt{isRefreshing} : au premier 401, un seul refresh part ; les autres requêtes rejoignent \texttt{failedQueue}. Nouveau token disponible : file vidée, headers mis à jour, requêtes rejouées.
 
-\begin{lstlisting}[language=TypeScript, caption={Intercepteur Axios pour le renouvellement silencieux OAuth2 avec file d'attente FIFO}, label={lst:oauth2interceptor}]
+\begin{lstlisting}[language=TypeScript, caption={Intercepteur Axios OAuth2}, label={lst:oauth2interceptor}]
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosError } from 'axios';
 
 interface QueuedRequest {
@@ -121,19 +109,17 @@ export function setupAuthInterceptor(apiClient: AxiosInstance, authService: any)
 }
 \end{lstlisting}
 
-\section{Trois incidents concrets}
+\section{Incidents rencontrés en production}
 
-Trois incidents concrets sur Metis, et ce qu'on en a tiré côté code.
+\subsection{Écart de centime sur la taxe IZ (taxe Chirac)}
 
-\subsection{1. L'Écart de Centime sur la Taxe de Solidarité (Taxe Chirac)}
+Le symptôme était net : \texttt{ERR\_PRICE\_MISMATCH} sur l'API NDC Air France, réservations Paris -- New York facturées en USD. Les logs Winston montraient 0,01\,USD d'écart entre le total commande et la somme des taxes ventilées (FR, IZ, QW).
 
-Deux nuits sur \texttt{ERR\_PRICE\_MISMATCH} renvoyé par l'API NDC Air France, réservations Paris -- New York pour des agences facturées en USD.
+On a d'abord suspecté la devise POS injectée dans \texttt{req.context.posCurrency}. Elle correspondait à celle d'Air France. L'écart venait de l'ordre des opérations : \texttt{Math.round} appliqué taxe par taxe après conversion donnait 124,51\,USD, alors que la conversion globale du total attendu valait 124,50\,USD. Nous avons basculé sur l'arrondi bancaire et ajouté une passe finale dans \texttt{pricingConsistency.utils.js} où la dernière composante de taxe absorbe le centime ($\text{Total} = \text{Base} + \sum \text{Taxes}$).
 
-Les logs Winston montraient 0,01\,USD d'écart entre le total commande et la somme des taxes ventilées (FR, IZ solidarité, QW aéroport). \texttt{Math.round} appliqué taxe par taxe donnait 124,51\,USD ; la conversion globale attendue était 124,50\,USD. Correctif : arrondi bancaire + passe de réconciliation dans \texttt{pricingConsistency.utils.js} --- la dernière composante absorbe le centime pour garantir $\text{Total} = \text{Base} + \sum \text{Taxes}$.
+Le listing \ref{lst:winston_ndc_mismatch} reproduit la trace capturée.
 
-Le listing \ref{lst:winston_ndc_mismatch} reproduit la trace JSON capturée.
-
-\begin{lstlisting}[language=json, caption={Trace Winston JSON structurée capturant l'écart de taxes lors du rejet NDC}, label={lst:winston_ndc_mismatch}]
+\begin{lstlisting}[language=json, caption={Log Winston --- rejet NDC écart de taxes}, label={lst:winston_ndc_mismatch}]
 {
   "timestamp": "2024-04-18T14:22:09.142Z",
   "level": "warn",
@@ -153,82 +139,40 @@ Le listing \ref{lst:winston_ndc_mismatch} reproduit la trace JSON capturée.
       "taxIZ_Solidarity": "18.31 USD",
       "taxQW_Airport": "61.00 USD"
     }
-  },
-  "recoveryAction": "APPLY_BANKERS_ROUNDING_AND_RETRY",
-  "resolved": true
+  }
 }
 \end{lstlisting}
 
-\subsection{2. Les Timestamps sans Fuseau Horaire chez Aegean et Turkish Airlines}
+\subsection{Horaires Aegean / Turkish décalés de deux heures}
 
-Un matin, alertes agences : vols Athènes / Istanbul affichés avec deux heures de décalage selon que le client était à Paris ou à Londres.
+Alertes agences sur des vols Athènes et Istanbul : selon que le poste client était à Paris ou à Londres, l'heure affichée bougeait. Les XML renvoyaient des dates ISO sans suffixe de fuseau (\texttt{"2024-06-15T18:30:00"}). \texttt{new Date()} côté Node les interprétait en UTC ; le navigateur réappliquait le fuseau local. Parsing via \texttt{date-fns-tz} et table aéroport IATA $\rightarrow$ fuseau IANA.
 
-Les XML transporteurs renvoyaient des dates ISO sans suffixe de fuseau (ex. \texttt{"2024-06-15T18:30:00"}). \texttt{new Date()} côté Node les prenait en UTC ; le navigateur réappliquait le fuseau du poste. Correctif : parsing strict via \texttt{date-fns-tz} et table aéroport IATA $\rightarrow$ fuseau IANA. Plus de constructeur natif direct sur ces champs.
+\subsection{Deadlock InnoDB sous Sequelize}
 
-\subsection{3. Interblocage (Deadlock SQL) sous Sequelize lors de Réservations Simultanées}
+Pendant une campagne promo chez une agence partenaire, les réservations simultanées ont commencé à échouer avec :
+\begin{verbatim}
+Deadlock found when trying to get lock; try restarting transaction
+\end{verbatim}
 
-Campagne promo chez une grande agence partenaire : réservations simultanées en échec avec \texttt{Deadlock found when trying to get lock; try restarting transaction}.
+Augmenter \texttt{connectionLimit} n'a rien changé : les erreurs restaient sur les écritures de dossier, pas sur les lectures de recherche. Un retry avec \texttt{setTimeout} a fait baisser un peu le taux d'erreur sans supprimer la cause.
 
-Repro via script concurrent. Les traces montraient deux transactions mettant à jour \texttt{PointDeVente} (compteurs API) et \texttt{Dossier} (insert PNR) dans un ordre inversé --- verrous InnoDB croisés. Correctif : même ordre d'update dans Sequelize, isolation par défaut \texttt{READ COMMITTED}, verrouillage pessimiste ordonné (\texttt{SELECT ... FOR UPDATE} trié par clé primaire).
-
-\section{Options écartées}
-
-Le tableau \ref{tab:alternatives_architecture} résume les options écartées et pourquoi.
-
-\begin{table}[H]
-\centering
-\small
-\renewcommand{\arraystretch}{1.3}
-\arrayrulecolor{CobaltBlue!25}
-\begin{tabularx}{\textwidth}{>{\columncolor{CobaltBlue!5}\bfseries}p{3.2cm} p{4.6cm} X}
-\hline
-\rowcolor{CobaltBlue!12}
-\textbf{\color{NavyBlue}Option Écartée} & \textbf{\color{NavyBlue}Avantages Théoriques} & \textbf{\color{NavyBlue}Motif du Choix Retenu pour Metis} \\
-\hline
-GraphQL Unifié & Requêtes sur mesure, pas de sur-récupération de données (\textit{over-fetching}). & Rejeté au profit de \textbf{REST / JSON} : mise en cache HTTP complexe et absence de support GraphQL chez les fournisseurs aériens. \\
-Architecture Kafka & Découplage maximal, absorption de pics de charge asynchrones. & Rejeté pour le flux de réservation direct : l'émission de billet requiert une \textbf{réponse synchrone immédiate ($<$ 3s)} pour garantir le prix au client. \\
-Web Components & Indépendance technologique absolue des modules graphiques. & Remplacé par des \textbf{SPAs Nuxt 3 / Vue 3 modulaires} : meilleure intégration TypeScript et absence de surcoût d'hydratation DOM. \\
-\hline
-\end{tabularx}
-\caption{Analyse critique des options d'architecture logicielle alternatives}
-\label{tab:alternatives_architecture}
-\end{table}
+La repro est venue d'un script qui lançait plusieurs \texttt{OrderCreate} en parallèle sur le même POS. Les traces InnoDB montraient une inversion d'ordre : une transaction faisait \texttt{UPDATE PointDeVente} puis \texttt{INSERT Dossier}, l'autre l'inverse. Nous avons imposé le même ordre d'update dans Sequelize, passé l'isolation à \texttt{READ COMMITTED}, et posé un \texttt{SELECT ... FOR UPDATE} trié par clé primaire avant la mise à jour des compteurs. Les retries applicatifs sont restés en place comme filet.
 
 \chapter{Travail en équipe et responsabilités en production}
 \label{chap:posture_professionnelle}
 
-\section{De la résolution de tickets à la conception}
+\section{Organisation du développement}
 
-Sur 38 mois chez Everbloo, le vrai changement n'est pas le stack : c'est la méthode. Au début, je fermais le ticket Jira. Plus tard, je regardais si le correctif allait casser l'API deux sprints plus loin.
+Les développements suivaient des sprints de deux semaines, avec daily et recettes PO. Sur les sujets sensibles (tarification, écritures passives, OAuth2), les merge requests passaient par une revue systématique sur GitLab ou GitHub. Plusieurs refontes (retarification, unification partielle GDS/NDC) ont nécessité une phase de cartographie des flux avant le codage, faute de quoi les correctifs locaux dans les contrôleurs se cumulaient.
 
-Les premiers mois, un bug de formulaire ou de taxes se réglait par une condition locale dans le contrôleur. Ça passait le cas du jour ; ça empilait de la dette.
+\section{Collaboration Paris / Tunisie}
 
-La charge réelle et les retours agences ont forcé un autre rythme : cartographier les flux, anticiper les erreurs réseau, poser des contrats TypeScript stricts, évaluer les verrous transactionnels avant de coder. C'est dans ce cadre que sont passées des refontes comme le moteur de retarification et l'unification GDS/NDC.
+L'équipe de développement est répartie entre Paris et la Tunisie. Les décisions techniques sont documentées (wiki, commentaires de revue). L'exemple des fuseaux horaires illustre le besoin : un parsing via le constructeur natif \texttt{Date} décalait les horaires sur les postes français ; le correctif commun a consisté à introduire \texttt{date-fns-tz} et une table aéroport $\rightarrow$ fuseau IANA, puis à en faire une règle de revue.
 
-\section{Équipe Paris / Tunisie}
+\section{Estimations}
 
-L'équipe est répartie entre Paris et la Tunisie. À distance, l'absence de discussions de couloir oblige à écrire les décisions techniques.
+Les premiers chiffrages sur les \textit{ancillaries} NDC sous-estimaient la diversité des règles compagnies. Les tests d'émission avec bébé sans siège ont entraîné une réécriture du mapping. Sur SOAP Sabre, le temps réel a surtout été consommé par la gestion des sessions expirées et des réponses non nominales.
 
-Exemple concret : fuseaux horaires sur vols internationaux. Un collègue de l'équipe tunisienne avait parsé les dates avec le constructeur natif JavaScript --- décalage de deux heures sur les postes français. Plutôt qu'un fix silencieux ou un rejet sec de MR, on a fait une session de pair programming sur Google Meet, posé le schéma \texttt{date-fns-tz} et documenté le guide sur le wiki.
+\section{Incidents côté agences}
 
-Même approche en revue de code GitLab / GitHub : expliquer pourquoi un type strict évite une régression silencieuse, pourquoi l'ordre des transactions Sequelize prévient un deadlock, pourquoi ISO 4217 n'est pas optionnel sur les devises. Objectif : aligner l'équipe sur des règles opérables, pas sur des slogans qualité.
-
-\section{Estimations ratées la première année}
-
-La première année a accumulé des estimations trop optimistes, surtout sur la complexité des normes aéronautiques.
-
-Premier cas : les \textit{ancillaries} NDC. J'avais pensé bagages et sièges comme un modèle générique simple. Aux premiers tests d'émission, la quasi-totalité des dossiers avec bébé sans siège rattaché a été rejetée. Réécriture urgente du mapping sous pression de livraison.
-
-Sur SOAP Sabre aussi, les premières charges étaient trop basses. Le cas nominal tenait sur une slide ; le temps réel partait dans les timeouts réseau, sessions expirées et payloads inattendus.
-
-\section{Impact financier d'une panne}
-
-Une panne Metis touche la trésorerie des agences et la crédibilité d'Everbloo.
-
-Un lundi à 9h30, pic d'activité : le support TourCom appelle --- réservations Sabre en cascade à cause d'un certificat intermédiaire expiré sur la passerelle. Des dizaines d'agents bloqués au téléphone avec leurs clients entreprises. Si l'outil ne répond pas, le client réserve ailleurs.
-
-Plus coûteux encore : un écart de taxes ou un segment passif en double sur Amadeus et Sabre se transforme en ADM, avec des pénalités qui peuvent monter à plusieurs milliers d'euros par dossier. D'où le temps passé sur l'arrondi bancaire, le refresh OAuth2 en tâche de fond et les contrôles pré-émission --- pas du zèle, de la protection de trésorerie.
-
-\section{Ce que je retiens}
-
-Trois réflexes : écrire du code qu'un collègue peut reprendre, traiter les pannes externes sans improvisation, et mesurer la qualité au comportement en production plutôt qu'au nombre de frameworks.
+Lors d'une indisponibilité liée à un certificat intermédiaire expiré sur la passerelle Sabre, le support TourCom a signalé un blocage massif en matinée. Les écarts de taxes ou les doubles segments passifs restent par ailleurs une source d'ADM dont le montant peut atteindre plusieurs milliers d'euros par dossier.

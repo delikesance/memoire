@@ -2,12 +2,10 @@
 \chapter*{Résumé}
 \addcontentsline{toc}{chapter}{Résumé}
 
-\noindent Pendant 38 mois d'alternance chez SAS Everbloo (octobre 2023 -- novembre 2026), j'ai travaillé comme apprenti architecte logiciel sur la plateforme \textbf{Metis}. Metis est un moteur de réservation de billets d'avion B2B utilisé par des réseaux d'agences (TourCom notamment) et par des entreprises pour leurs déplacements professionnels. J'ai contribué aux quatre dépôts du monorepo (\texttt{api-aerial}, \texttt{front-reservation}, \texttt{front-dashboard} et \texttt{api-dashboard}), pour un total de 1\,554 commits. Le nœud du travail : faire cohabiter les GDS historiques (Sabre, Amadeus) --- sessions stateful, protocole EDIFACT --- et les API IATA NDC --- requêtes HTTP sans état, offres à durée de vie courte. Comment garder des prix et des réservations cohérents quand ces deux stacks se mélangent dans un même panier ?
+\noindent Alternance de 38 mois chez Everbloo (octobre 2023 -- novembre 2026) sur la plateforme \textbf{Metis}, moteur de réservation aérienne B2B. J'y suis intervenu surtout sur \texttt{api-aerial} et \texttt{front-reservation}, et ponctuellement sur \texttt{front-dashboard} / \texttt{api-dashboard}.
 
-\noindent Sur le terrain, j'ai mis en place une architecture modulaire : backend Node.js/Express (ORM Sequelize), interfaces Nuxt~3 / Vue~3 en TypeScript. Une couche d'adaptateurs (\texttt{SabreAdapter.ts}) normalise les réponses transporteurs vers un modèle unique. Un intercepteur Axios renouvelle les sessions OAuth2 en arrière-plan sans couper le parcours utilisateur. L'algorithme \texttt{matchesPaxRefId} traite les rejets IATA fréquents (bébés sans siège, noms accentués). Quand le tarif bouge au checkout, un dialogue de confirmation remplace l'échec brutal. Le pipeline multi-devises (ISO 4217) a aussi été corrigé pour supprimer les écarts de centimes et les ADM associés.
-
-\noindent Ces mécanismes tournent sur le trafic réel de près de cent agences. Sur la période observée, les logs indiquent un taux de rejet applicatif NDC inférieur à 0,1\,\% (hors indisponibilités transporteurs), un temps de réponse moyen des recherches à 3,0\,s en campagne de tests, et zéro litige ADM sur les deux dernières années. La production a surtout rappelé où se logent les vrais problèmes : fuseaux horaires mal parsés, deadlocks InnoDB sous pic, pannes du lundi matin à gérer sans improvisation.
+\noindent Le sujet traité est la coexistence Sabre/Amadeus (GDS) et NDC IATA dans un même parcours de réservation : mapping des offres, sessions OAuth2, création d'ordre (passagers, ancillaries), écarts de prix au paiement, devises ISO 4217, segments passifs. Le reste du document détaille l'implémentation, les mesures et quelques incidents de production.
 
 \vspace{0.6cm}
 \noindent \textbf{\large Mots-clés :}\\
-\noindent Distribution Aérienne, GDS (Sabre, Amadeus), IATA NDC, Nuxt 3, Vue 3, TypeScript, Node.js, Express, Cohérence Transactionnelle, Reshopping, OAuth2, Multi-Devises ISO 4217, Segments Passifs, Tests Automatisés.
+\noindent GDS, NDC, Sabre, Amadeus, TypeScript, Node.js, OAuth2, ISO 4217, ADM.

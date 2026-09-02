@@ -1,18 +1,16 @@
 \chapter{Conclusion}
 \label{chap:conclusion}
 
-\section{Ce qui a tenu}
+\section{Bilan}
 
-Sur 38 mois, Metis a surtout montré l'écart entre modèles propres et production : sessions GDS synchrones (Sabre, Amadeus) d'un côté, API NDC sans état de l'autre. Les arbitrages se sont joués entre latence, risque financier (ADM) et parcours utilisateur.
+Les adaptateurs, l'intercepteur OAuth2, l'appairage des passagers et la retarification tournent chez les agences suivies. \texttt{rawCarrierMetadata} est toujours là. La table d'exceptions ERP aussi. Quand le transporteur ne renvoie plus d'offre après un 409, le parcours reste médiocre.
 
-\texttt{SabreAdapter.ts} a permis de brancher British Airways, Aegean et Turkish sans retoucher les composants panier. L'intercepteur Axios avec file d'attente a coupé les déconnexions au refresh OAuth2. \texttt{matchesPaxRefId} a ramené le rejet NDC sous 0,1\,\%. La modale de confirmation tarifaire a sauvé 92\,\% des paniers touchés par une hausse de dernière minute. Le découpage des segments passifs a évité tout ADM pour double écriture sur plus de deux ans.
+J'ai passé beaucoup plus de temps que prévu sur la taxe IZ, les fuseaux Aegean/Turkish et le deadlock InnoDB. Depuis, je prépare plus souvent une repro avant de modifier un contrôleur, et je pose la question au PO quand une règle métier est floue.
 
-\section{Lien avec le RNCP 36137}
+\section{RNCP 36137}
 
-Le titre d'\textbf{Expert en Ingénierie Informatique} (niveau 7) demande de concevoir des systèmes distribués, de tenir la qualité en production et de travailler en équipe sur des enjeux métier. Sur Metis, ça s'est joué concrètement : contrats TypeScript entre services, appels non bloquants Node.js vers Sabre/NDC, front Nuxt~3 / Vue~3 / Pinia avec une baisse de 28\,\% du temps de réponse moyen sur la recherche, suites Mocha / Chai / Playwright pour l'appairage passagers et l'égalité ISO 4217 sur les taxes. Les lundis matins (certificat expiré, deadlocks, écarts de centimes) et le travail quotidien avec les PO et l'équipe en Tunisie ont autant compté que les specs écrites.
+Pour le titre d'\textbf{Expert en Ingénierie Informatique}, ce projet m'a mis devant une architecture multi-services, du full-stack Node.js / Nuxt, des contraintes ADM, des tests automatisés et une équipe Paris / Tunisie. Je n'ai pas déroulé le référentiel point par point ; ce sont les sujets que j'ai réellement traités.
 
-\section{Suite}
+\section{Perspectives}
 
-Deux chantiers pour la suite de Metis. \textbf{IATA ONE Order} regroupera PNR, billet et options dans une commande unique ; le modèle pivot déjà en place limite l'impact sur les écrans existants. \textbf{OpenTelemetry} permettra de mesurer la latence par transporteur et d'isoler plus vite les ralentissements amont.
-
-Je poursuis comme \textbf{Architecte Systèmes d'Information et Lead Developer}. Critère inchangé : un système se juge à ce qu'il fait en production pour les utilisateurs, pas à la liste des frameworks du \texttt{package.json}.
+Deux sujets à suivre : \textbf{IATA ONE Order} et \textbf{OpenTelemetry} sur les appels transporteurs.

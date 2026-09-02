@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2025/nixos.org) (preloaded format=pdflatex 1980.1.1)  2 SEP 2026 21:16
+This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2025/nixos.org) (preloaded format=pdflatex 1980.1.1)  2 SEP 2026 22:13
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1212,7 +1212,7 @@ Package hyperref Info: Link coloring ON on input line 5.
 
 
 (./sections/00_page_de_garde.tex
-<assets/logo_etna.png, id=336, 371.3875pt x 116.435pt>
+<assets/logo_etna.png, id=312, 371.3875pt x 116.435pt>
 File: assets/logo_etna.png Graphic file (type png)
 <use assets/logo_etna.png>
 Package pdftex.def Info: assets/logo_etna.png  used on input line 9.
@@ -1273,7 +1273,7 @@ File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 fdist/tex/latex/microtype/mt-msb.cfg
 File: mt-msb.cfg 2005/06/01 v1.0 microtype config. file: AMS symbols (b) (RS)
 )
-<assets/logo_everbloo.png, id=338, 915.42pt x 148.555pt>
+<assets/logo_everbloo.png, id=314, 915.42pt x 148.555pt>
 File: assets/logo_everbloo.png Graphic file (type png)
 <use assets/logo_everbloo.png>
 Package pdftex.def Info: assets/logo_everbloo.png  used on input line 18.
@@ -1306,25 +1306,24 @@ Package microtype Info: Loading generic protrusion settings for font family
 ] (./main.toc [4
 
 
-]
-Package babel Info: 'french' activates 'french' shorthands.
-(babel)             Reported on input line 76.
- [5])
+])
 \tf@toc=\write5
 \openout5 = `main.toc'.
 
- [6] (./main.lof)
+Package babel Info: 'french' activates 'french' shorthands.
+(babel)             Reported on input line 31.
+ [5] (./main.lof)
 \tf@lof=\write6
 \openout6 = `main.lof'.
 
- [7
+ [6
 
 
 ] (./main.lot)
 \tf@lot=\write7
 \openout7 = `main.lot'.
 
- [8
+ [7
 
 ] (./sections/03_introduction.tex
 Chapitre 1.
@@ -1336,8 +1335,7 @@ been already used, duplicate ignored
 l.1 \part{Contexte et environnement}
                                      [1
 
-{/nix/store/3b1j5jipjpakdak6par146z865lwq8rp-texlive-2025-r78234-final-env-texm
-fdist/fonts/enc/dvips/lm/lm-mathsy.enc}] [2
+] [2
 
 ]
 Chapitre 2.
@@ -1348,7 +1346,7 @@ Package pdftex.def Info: assets/logo_everbloo.png  used on input line 13.
 Package microtype Info: Character `029' is missing
 (microtype)             in font `T1/lmr/m/sc/10.95'.
 (microtype)             Ignoring protrusion settings for this character.
-<assets/logo_metis.png, id=496, 501.875pt x 189.70876pt>
+<assets/logo_metis.png, id=455, 501.875pt x 189.70876pt>
 File: assets/logo_metis.png Graphic file (type png)
 <use assets/logo_metis.png>
 Package pdftex.def Info: assets/logo_metis.png  used on input line 26.
@@ -1356,77 +1354,59 @@ Package pdftex.def Info: assets/logo_metis.png  used on input line 26.
 [3
 
  <./assets/logo_metis.png>]
-LaTeX Font Info:    Trying to load font information for TS1+lmr on input line 6
-8.
+LaTeX Font Info:    Trying to load font information for TS1+lmr on input line 5
+9.
 
 (/nix/store/3b1j5jipjpakdak6par146z865lwq8rp-texlive-2025-r78234-final-env-texm
 fdist/tex/latex/lm/ts1lmr.fd
 File: ts1lmr.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 ) [4{/nix/store/3b1j5jipjpakdak6par146z865lwq8rp-texlive-2025-r78234-final-env-
-texmfdist/fonts/enc/dvips/lm/lm-ts1.enc}]
+texmfdist/fonts/enc/dvips/lm/lm-mathsy.enc}{/nix/store/3b1j5jipjpakdak6par146z8
+65lwq8rp-texlive-2025-r78234-final-env-texmfdist/fonts/enc/dvips/lm/lm-ts1.enc}
+]
 Chapitre 3.
+) (./sections/05_problematique.tex [5
 
-Underfull \hbox (badness 1668) in paragraph at lines 144--144
-[]|[]\T1/lmr/bx/n/10 (+20) Rôle Fonc-tion-nel & Tech-
- []
-
-[5
-
-]) (./sections/05_problematique.tex [6]
+]
 Chapitre 4.
-LaTeX Font Info:    Font shape `T1/lmtt/bx/n' in size <12> not available
-(Font)              Font shape `T1/lmtt/b/n' tried instead on input line 28.
-[7
+) (./sections/06_partie2_realisations.tex [6
 
-]) (./sections/06_partie2_realisations.tex [8] [9
+] [7
 
 ]
 Chapitre 5.
-
-Overfull \hbox (15.09854pt too wide) in paragraph at lines 7--7
-|[]\T1/lmr/bx/n/14.4 (-20) Expérience Uti-li-sa-teur et Mo-teur de Re-cherche M
-e-tis Connect| 
- []
-
-
-Overfull \hbox (26.8247pt too wide) in paragraph at lines 11--12
-[]\T1/lmr/m/n/10.95 (-20) La fi-gure [][]5.1[][] montre l'in-ter-face prin-ci-p
-ale, dé-ve-lop-pée en Nuxt 3 / Vue 3 dans \T1/lmtt/m/n/10.95 front-reservation\
-T1/lmr/m/n/10.95 (-20) . 
- []
-
-<assets/metis_recherche_vols_hd.png, id=537, 2055.68pt x 959.585pt>
+<assets/metis_recherche_vols_hd.png, id=488, 2055.68pt x 959.585pt>
 File: assets/metis_recherche_vols_hd.png Graphic file (type png)
 <use assets/metis_recherche_vols_hd.png>
 Package pdftex.def Info: assets/metis_recherche_vols_hd.png  used on input line
- 15.
+ 13.
 (pdftex.def)             Requested size: 421.66849pt x 196.83333pt.
-Package hyperref Info: bookmark level for unknown lstlisting defaults to 0 on i
-nput line 28.
-LaTeX Font Info:    Font shape `T1/lmtt/bx/n' in size <9> not available
-(Font)              Font shape `T1/lmtt/b/n' tried instead on input line 29.
-[10
 
- <./assets/metis_recherche_vols_hd.png>] [11] [12]
-<assets/metis_commande_cryptique.png, id=660, 1027.84pt x 655.44875pt>
+Overfull \hbox (0.30075pt too wide) in paragraph at lines 24--25
+[]\T1/lmr/m/n/10.95 (-20) Le lis-ting [][]5.1[][] montre \T1/lmtt/m/n/10.95 Sab
+reAdapter.ts \T1/lmr/m/n/10.95 (-20) : les pay-loads ar-rivent dans \T1/lmtt/m/
+n/10.95 CanonicalFlightOffer\T1/lmr/m/n/10.95 (-20) .
+ []
+
+Package hyperref Info: bookmark level for unknown lstlisting defaults to 0 on i
+nput line 26.
+LaTeX Font Info:    Font shape `T1/lmtt/bx/n' in size <9> not available
+(Font)              Font shape `T1/lmtt/b/n' tried instead on input line 27.
+[8
+
+ <./assets/metis_recherche_vols_hd.png>] [9] [10]
+<assets/metis_commande_cryptique.png, id=610, 1027.84pt x 655.44875pt>
 File: assets/metis_commande_cryptique.png Graphic file (type png)
 <use assets/metis_commande_cryptique.png>
 Package pdftex.def Info: assets/metis_commande_cryptique.png  used on input lin
-e 141.
+e 139.
 (pdftex.def)             Requested size: 390.60161pt x 249.08311pt.
-
-Overfull \hbox (9.06815pt too wide) in paragraph at lines 156--157
-\T1/lmr/m/n/10.95 (-20) an-nu-la-tion par-tielle). Dans \T1/lmtt/m/n/10.95 retr
-ieve.controller.js\T1/lmr/m/n/10.95 (-20) , la fonc-tion \T1/lmtt/m/n/10.95 kee
-pOnlyMatchingTravelers
- []
-
-[13 <./assets/metis_commande_cryptique.png>] [14]
+ [11 <./assets/metis_commande_cryptique.png>] [12]
 Chapitre 6.
 LaTeX Font Info:    Font shape `T1/lmtt/bx/n' in size <8> not available
-(Font)              Font shape `T1/lmtt/b/n' tried instead on input line 181.
+(Font)              Font shape `T1/lmtt/b/n' tried instead on input line 177.
 LaTeX Font Info:    Trying to load font information for T1+lmss on input line 1
-86.
+82.
 
 (/nix/store/3b1j5jipjpakdak6par146z865lwq8rp-texlive-2025-r78234-final-env-texm
 fdist/tex/latex/lm/t1lmss.fd
@@ -1437,9 +1417,9 @@ Package microtype Info: Loading generic protrusion settings for font family
 (microtype)             For optimal results, create family-specific settings.
 (microtype)             See the microtype manual for details.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <9> on input line 243.
+(Font)              <9> on input line 239.
 LaTeX Font Info:    Trying to load font information for TS1+lmss on input line 
-243.
+239.
 
 (/nix/store/3b1j5jipjpakdak6par146z865lwq8rp-texlive-2025-r78234-final-env-texm
 fdist/tex/latex/lm/ts1lmss.fd
@@ -1450,99 +1430,74 @@ Package microtype Info: Loading generic protrusion settings for font family
 (microtype)             For optimal results, create family-specific settings.
 (microtype)             See the microtype manual for details.
 
-Underfull \hbox (badness 10000) in paragraph at lines 270--270
-[]\T1/lmr/m/sc/10.95 (+20) Figure 6.2 \T1/lmr/m/n/10.95 (+20) : []Interface du 
-dia-logue de confir-ma-tion d'écart ta-ri-faire
+Underfull \hbox (badness 10000) in paragraph at lines 252--252
+[]|[]\T1/lmss/bx/n/9 (+20) Message trans-por-teur : \T1/lmss/m/n/9 (+20) le ta-
+rif de la classe de-man-dée n'est plus dis-po-nible au même
  []
 
-[15
+[13
 
 {/nix/store/3b1j5jipjpakdak6par146z865lwq8rp-texlive-2025-r78234-final-env-texm
 fdist/fonts/enc/dvips/lm/lm-mathit.enc}{/nix/store/3b1j5jipjpakdak6par146z865lw
 q8rp-texlive-2025-r78234-final-env-texmfdist/fonts/enc/dvips/lm/lm-rm.enc}]
-[16] [17] [18]
+Overfull \hbox (12.53705pt too wide) in paragraph at lines 274--275
+[]\T1/lmr/m/n/10.95 (-20) Le lis-ting [][]6.1[][] (\T1/lmtt/m/n/10.95 orderCrea
+tion.utils.ts\T1/lmr/m/n/10.95 (-20) ) couvre le net-toyage AS-CII, \T1/lmtt/m/
+n/10.95 associatedAdultRefId
+ []
+
+[14] [15] [16]
 Chapitre 7.
-[19
+[17
 
 ]
 Chapitre 8.
-[20
+[18
 
 ]
 Chapitre 9.
 LaTeX Font Info:    Font shape `T1/lmtt/bx/n' in size <10.95> not available
-(Font)              Font shape `T1/lmtt/b/n' tried instead on input line 417.
-[21
+(Font)              Font shape `T1/lmtt/b/n' tried instead on input line 411.
+
+Overfull \hbox (5.91321pt too wide) in paragraph at lines 417--418
+\T1/lmr/m/n/10.95 (-20) par-taient tous en pa-ral-lèle. Les dia-logues \T1/lmtt
+/m/n/10.95 DialogUpdateSabre.vue \T1/lmr/m/n/10.95 (-20) et \T1/lmtt/m/n/10.95 
+DialogImportProfil.vue
+ []
+
+[19
 
 ]
 Chapitre 10.
-
-Underfull \hbox (badness 10000) in paragraph at lines 459--459
-[]|\T1/lmr/bx/n/10 (+20) Taux d'Échec
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 459--459
-\T1/lmr/m/n/10 (+20) com-pa-gnies pour dé-ca-lages
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 459--459
-[]|\T1/lmr/bx/n/10 (+20) Gestion Va-ria-
- []
-
-
-Underfull \hbox (badness 1688) in paragraph at lines 459--459
-[]|\T1/lmr/bx/n/10 (+20) Middleware asyn-chrone + cache
- []
-
-
-Underfull \hbox (badness 1412) in paragraph at lines 459--459
-[]|\T1/lmr/bx/n/10 (+20) Temps Ré-ponse
- []
-
-) (./sections/07_partie3_demarche_reflexive.tex [22
+) (./sections/07_partie3_demarche_reflexive.tex [20
 
 {/nix/store/3b1j5jipjpakdak6par146z865lwq8rp-texlive-2025-r78234-final-env-texm
-fdist/fonts/enc/dvips/lm/lm-mathex.enc}] [23
+fdist/fonts/enc/dvips/lm/lm-mathex.enc}] [21
 
 ]
 Chapitre 11.
-[24
+LaTeX Font Info:    Font shape `T1/lmtt/bx/n' in size <12> not available
+(Font)              Font shape `T1/lmtt/b/n' tried instead on input line 23.
 
-] [25]
+Overfull \hbox (82.67513pt too wide) in paragraph at lines 33--34
+[]\T1/lmr/m/n/10.95 (-20) En test, après un re-fus, Pi-nia gar-dait par-fois le
+s iden-ti-fiants de l'an-cienne offre. \T1/lmtt/m/n/10.95 useBookingStore().$re
+set()
+ []
+
+[22
+
+]
 Chapitre 12.
-[26
+[23
 
-] [27]
-Overfull \hbox (49.76363pt too wide) in paragraph at lines 166--167
-[]\T1/lmr/m/n/10.95 (-20) Les XML trans-por-teurs ren-voyaient des dates ISO sa
-ns suf-fixe de fu-seau (ex. \T1/lmtt/m/n/10.95 "2024-06-15T18:30:00"\T1/lmr/m/n
-/10.95 (-20) ).
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 192--192
-[]|\T1/lmr/bx/n/10 (+20) Architecture
- []
-
-
-Underfull \hbox (badness 4024) in paragraph at lines 192--192
-[]|\T1/lmr/m/n/10 (+20) Indépendance tech-no-lo-gique
- []
-
-
-Underfull \hbox (badness 7613) in paragraph at lines 192--192
-\T1/lmr/m/n/10 (+20) ab-so-lue des mo-dules gra-
- []
-
-[28] [29]
+] [24] [25]
 Chapitre 13.
-[30
+) (./sections/08_conclusion.tex [26
 
-]) (./sections/08_conclusion.tex [31]
+]
 Chapitre 14.
-) (./sections/02_sigles_abreviations.tex [32
+) (./sections/02_sigles_abreviations.tex [27
 
 ]
 Overfull \hbox (1.23785pt too wide) in alignment at lines 11--16
@@ -1560,14 +1515,13 @@ Overfull \hbox (1.23785pt too wide) in alignment at lines 22--25
  []
 
 
-Overfull \hbox (1.23785pt too wide) in alignment at lines 25--52
+Overfull \hbox (1.23785pt too wide) in alignment at lines 25--41
  [] [] 
  []
 
-ignored error: Infinite glue shrinkage found in box being split [33
+) (./sections/09_glossaire_bibliographie.tex [28
 
-])
-(./sections/09_glossaire_bibliographie.tex [34]
+]
 Overfull \hbox (1.23785pt too wide) in alignment at lines 11--16
  [] [] 
  []
@@ -1580,11 +1534,6 @@ Overfull \hbox (1.23785pt too wide) in alignment at lines 16--22
 
 Overfull \hbox (1.23785pt too wide) in alignment at lines 22--25
  [] [] 
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 28--28
-[]|\T1/lmr/bx/n/10 (+20) Canonical Data
  []
 
 
@@ -1593,28 +1542,42 @@ Underfull \hbox (badness 10000) in paragraph at lines 29--29
  []
 
 
-Overfull \hbox (1.23785pt too wide) in alignment at lines 25--40
+Overfull \hbox (1.23785pt too wide) in alignment at lines 25--35
  [] [] 
  []
 
-[35
+[29
 
-] [36
+]
+Overfull \hbox (2.32501pt too wide) in paragraph at lines 56--57
+[]\T1/lmr/bx/n/10.95 (-20) Sequelize. \T1/lmr/m/it/10.95 (-20) Tran-sac-tions \
+T1/lmr/m/n/10.95 (-20) (iso-la-tion le-vels, locks). Do-cu-men-ta-tion v6. [][]
+$\T1/lmtt/m/n/10.95 https : / / sequelize .
+ []
 
-]) [37] (./main.aux)
+
+Overfull \hbox (144.05476pt too wide) in paragraph at lines 58--59
+\T1/lmr/m/n/10.95 (-20) glish. [][]$\T1/lmtt/m/n/10.95 https : / / javascript .
+ plainenglish . io / how-[]to-[]handle-[]database-[]deadlock-[]in-[]sequelize-[
+]6bee46e9ed99$[][] 
+ []
+
+[30
+
+]) [31] (./main.aux)
  ***********
 LaTeX2e <2025-11-01>
 L3 programming layer <2026-01-19>
  ***********
 Package rerunfilecheck Info: File `main.out' has not changed.
-(rerunfilecheck)             Checksum: BBF905DC472974028536BD0C7AA91B07;18379.
+(rerunfilecheck)             Checksum: 19645B685E34C862763E2A024C5C4F1A;13712.
  ) 
 Here is how much of TeX's memory you used:
- 33710 strings out of 467535
- 651634 string characters out of 5388798
- 1346135 words of memory out of 5000000
- 61156 multiletter control sequences out of 15000+600000
- 777875 words of font info for 337 fonts, out of 8000000 for 9000
+ 33549 strings out of 467535
+ 649684 string characters out of 5388798
+ 1334888 words of memory out of 5000000
+ 61137 multiletter control sequences out of 15000+600000
+ 766883 words of font info for 273 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  89i,16n,97p,1001b,2197s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </nix/store/3b1j5jipjpakdak6par146z865lwq8rp-texlive-2025-r78234-final-env-te
@@ -1637,31 +1600,29 @@ nts/type1/public/lm/lmr8.pfb></nix/store/3b1j5jipjpakdak6par146z865lwq8rp-texli
 ve-2025-r78234-final-env-texmfdist/fonts/type1/public/lm/lmr9.pfb></nix/store/3
 b1j5jipjpakdak6par146z865lwq8rp-texlive-2025-r78234-final-env-texmfdist/fonts/t
 ype1/public/lm/lmri10.pfb></nix/store/3b1j5jipjpakdak6par146z865lwq8rp-texlive-
-2025-r78234-final-env-texmfdist/fonts/type1/public/lm/lmri12.pfb></nix/store/3b
+2025-r78234-final-env-texmfdist/fonts/type1/public/lm/lmss10.pfb></nix/store/3b
 1j5jipjpakdak6par146z865lwq8rp-texlive-2025-r78234-final-env-texmfdist/fonts/ty
-pe1/public/lm/lmss10.pfb></nix/store/3b1j5jipjpakdak6par146z865lwq8rp-texlive-2
-025-r78234-final-env-texmfdist/fonts/type1/public/lm/lmss8.pfb></nix/store/3b1j
-5jipjpakdak6par146z865lwq8rp-texlive-2025-r78234-final-env-texmfdist/fonts/type
-1/public/lm/lmss9.pfb></nix/store/3b1j5jipjpakdak6par146z865lwq8rp-texlive-2025
--r78234-final-env-texmfdist/fonts/type1/public/lm/lmssbx10.pfb></nix/store/3b1j
-5jipjpakdak6par146z865lwq8rp-texlive-2025-r78234-final-env-texmfdist/fonts/type
-1/public/lm/lmsso8.pfb></nix/store/3b1j5jipjpakdak6par146z865lwq8rp-texlive-202
-5-r78234-final-env-texmfdist/fonts/type1/public/lm/lmsy10.pfb></nix/store/3b1j5
+pe1/public/lm/lmss8.pfb></nix/store/3b1j5jipjpakdak6par146z865lwq8rp-texlive-20
+25-r78234-final-env-texmfdist/fonts/type1/public/lm/lmss9.pfb></nix/store/3b1j5
 jipjpakdak6par146z865lwq8rp-texlive-2025-r78234-final-env-texmfdist/fonts/type1
-/public/lm/lmsy8.pfb></nix/store/3b1j5jipjpakdak6par146z865lwq8rp-texlive-2025-
-r78234-final-env-texmfdist/fonts/type1/public/lm/lmsy9.pfb></nix/store/3b1j5jip
+/public/lm/lmssbx10.pfb></nix/store/3b1j5jipjpakdak6par146z865lwq8rp-texlive-20
+25-r78234-final-env-texmfdist/fonts/type1/public/lm/lmsso8.pfb></nix/store/3b1j
+5jipjpakdak6par146z865lwq8rp-texlive-2025-r78234-final-env-texmfdist/fonts/type
+1/public/lm/lmsy10.pfb></nix/store/3b1j5jipjpakdak6par146z865lwq8rp-texlive-202
+5-r78234-final-env-texmfdist/fonts/type1/public/lm/lmsy8.pfb></nix/store/3b1j5j
+ipjpakdak6par146z865lwq8rp-texlive-2025-r78234-final-env-texmfdist/fonts/type1/
+public/lm/lmsy9.pfb></nix/store/3b1j5jipjpakdak6par146z865lwq8rp-texlive-2025-r
+78234-final-env-texmfdist/fonts/type1/public/lm/lmtk10.pfb></nix/store/3b1j5jip
 jpakdak6par146z865lwq8rp-texlive-2025-r78234-final-env-texmfdist/fonts/type1/pu
-blic/lm/lmtk10.pfb></nix/store/3b1j5jipjpakdak6par146z865lwq8rp-texlive-2025-r7
-8234-final-env-texmfdist/fonts/type1/public/lm/lmtt10.pfb></nix/store/3b1j5jipj
-pakdak6par146z865lwq8rp-texlive-2025-r78234-final-env-texmfdist/fonts/type1/pub
-lic/lm/lmtt8.pfb></nix/store/3b1j5jipjpakdak6par146z865lwq8rp-texlive-2025-r782
-34-final-env-texmfdist/fonts/type1/public/lm/lmtt9.pfb></nix/store/3b1j5jipjpak
-dak6par146z865lwq8rp-texlive-2025-r78234-final-env-texmfdist/fonts/type1/public
-/lm/lmtti10.pfb>
-Output written on main.pdf (46 pages, 993453 bytes).
+blic/lm/lmtt10.pfb></nix/store/3b1j5jipjpakdak6par146z865lwq8rp-texlive-2025-r7
+8234-final-env-texmfdist/fonts/type1/public/lm/lmtt8.pfb></nix/store/3b1j5jipjp
+akdak6par146z865lwq8rp-texlive-2025-r78234-final-env-texmfdist/fonts/type1/publ
+ic/lm/lmtt9.pfb></nix/store/3b1j5jipjpakdak6par146z865lwq8rp-texlive-2025-r7823
+4-final-env-texmfdist/fonts/type1/public/lm/lmtti10.pfb>
+Output written on main.pdf (39 pages, 946151 bytes).
 PDF statistics:
- 1237 PDF objects out of 1440 (max. 8388607)
- 1088 compressed objects within 11 object streams
- 442 named destinations out of 1000 (max. 500000)
- 100070 words of extra memory for PDF output out of 106986 (max. 10000000)
+ 1170 PDF objects out of 1200 (max. 8388607)
+ 1031 compressed objects within 11 object streams
+ 426 named destinations out of 1000 (max. 500000)
+ 95926 words of extra memory for PDF output out of 106986 (max. 10000000)
 

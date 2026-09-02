@@ -4,11 +4,9 @@
 \chapter{GDS et NDC dans le même moteur}
 \label{chap:integration_gds_ndc}
 
-\section{Expérience Utilisateur et Moteur de Recherche Metis Connect}
+\section{Interface de recherche Metis Connect}
 
-Sur le moteur de recherche Metis Connect, la contrainte UI était claire : agréger des offres issues de sources incompatibles sans ralentir l'opérateur. Les agents veulent une vue graphique pour comparer vite ; les billettistes seniors tiennent à leurs commandes cryptiques Sabre pour les opérations complexes.
-
-La figure \ref{fig:metis_recherche} montre l'interface principale, développée en Nuxt~3 / Vue~3 dans \texttt{front-reservation}.
+Metis Connect devait afficher côte à côte des offres Sabre et NDC. Les agents de comptoir utilisent surtout la vue graphique ; les billettistes habitués au GDS conservent un besoin de commandes cryptiques pour certains dossiers. La figure \ref{fig:metis_recherche} montre l'écran principal dans \texttt{front-reservation} (Nuxt~3 / Vue~3).
 
 \begin{figure}[H]
 \centering
@@ -21,11 +19,11 @@ L'écran couvre allers simples, allers-retours et multi-destinations. L'utilisat
 
 \section{Normalisation des offres via adaptateurs}
 
-Pour éviter de saupoudrer le frontend de \texttt{if} par transporteur, j'ai introduit une couche d'adaptateurs. Sabre renvoie SOAP ou texte brut ; les passerelles NDC directes (Air France-KLM, British Airways, Aegean, Turkish) répondent en JSON ou XML.
+Sabre renvoie du SOAP ou du texte brut. Les NDC directs (Air France-KLM, British Airways, Aegean, Turkish) répondent en JSON ou XML. Sans couche commune, le frontend accumulait des branches par transporteur.
 
-Le module \texttt{SabreAdapter.ts} (listing \ref{lst:sabreadapter}) mappe ces payloads vers \texttt{CanonicalFlightOffer}. Recherche et panier manipulent ensuite une seule structure TypeScript, indépendante du protocole amont.
+Le listing \ref{lst:sabreadapter} montre \texttt{SabreAdapter.ts} : les payloads arrivent dans \texttt{CanonicalFlightOffer}. Ensuite, recherche et panier ne voient plus qu'une structure TypeScript.
 
-\begin{lstlisting}[language=TypeScript, caption={Adaptateur de normalisation des offres Sabre (\texttt{SabreAdapter.ts})}, label={lst:sabreadapter}]
+\begin{lstlisting}[language=TypeScript, caption={\texttt{SabreAdapter.ts}}, label={lst:sabreadapter}]
 export interface SabreFlightLeg {
   origin: string;
   destination: string;
@@ -130,11 +128,11 @@ export class SabreAdapter {
 }
 \end{lstlisting}
 
-\section{Terminal et Commandes Cryptiques pour Billettistes}
+\section{Terminal cryptique pour billettistes}
 
-Dans les agences classiques, beaucoup de billettistes restent plus rapides en commandes cryptiques Sabre qu'en clics. Pour éviter le va-et-vient entre Metis Connect et un émulateur externe, j'ai intégré un \textbf{émulateur de terminal cryptique} dans l'appli web.
+Pendant longtemps, j'ai sous-estimé l'importance de ce morceau. Pour quelqu'un qui n'a jamais travaillé en agence, une interface graphique semble suffire. En réalité, plusieurs billettistes avec qui j'ai échangé vont plus vite en tapant une commande Sabre qu'en enchaînant des clics, surtout lorsqu'il s'agit de manipuler un PNR hors du parcours standard (profil d'imprimante, classe précise, correction d'un champ).
 
-La figure \ref{fig:metis_cryptique} montre la modale d'exécution et la restitution des réponses Sabre.
+Plutôt que de les renvoyer vers un émulateur externe, j'ai intégré une modale de terminal dans Metis Connect (figure \ref{fig:metis_cryptique}). \texttt{api-aerial} relaie la saisie via l'API Sabre Command et affiche le texte brut renvoyé. Ce n'est pas le composant le plus spectaculaire du projet, mais c'est l'un de ceux qui ont le plus réduit les frictions au quotidien pour une partie des utilisateurs.
 
 \begin{figure}[H]
 \centering
@@ -143,26 +141,24 @@ La figure \ref{fig:metis_cryptique} montre la modale d'exécution et la restitut
 \label{fig:metis_cryptique}
 \end{figure}
 
-L'agent saisit des commandes natives pour interroger les classes, manipuler un PNR ou gérer les profils d'imprimantes. \texttt{api-aerial} relaie via l'API Sabre Command et renvoie le flux textuel brut dans l'interface.
-
-\section{Gestion Découplée des Segments Passifs Amadeus et Sabre}
+\section{Segments passifs Amadeus et Sabre}
 
 Un billet émis en NDC direct est enregistré chez le transporteur, hors inventaire actif du GDS de l'agence. Pourtant, pour que Gestour, IEnterprise ou l'équivalent génère la facture et les flux de trésorerie, un \textbf{segment passif} informatif doit être posé dans le GDS de référence de l'agence.
 
-Une mauvaise coordination produit des doubles écritures passives --- ou des écritures incohérentes --- sanctionnées par des avis de débit (\textit{Agency Debit Memos} / ADM). J'ai donc livré la migration \texttt{split-passive-segment-options}, qui isole les paramètres d'écriture passive par point de vente. Avant notification, le contrôleur vérifie le canal d'émission : dossier traité sur Sabre $\Rightarrow$ écriture passive Amadeus désactivée. Un seul enregistrement comptable par dossier.
+Une mauvaise coordination produit des doubles écritures passives --- ou des écritures incohérentes --- sanctionnées par des avis de débit (\textit{Agency Debit Memos} / ADM). La migration \texttt{split-passive-segment-options} isole les paramètres d'écriture passive par point de vente. Avant notification, le contrôleur vérifie le canal d'émission : dossier traité sur Sabre $\Rightarrow$ écriture passive Amadeus désactivée.
 
-\section{Synchronisation des Dossiers Voyageurs (PNR)}
+\section{Synchronisation des PNR}
 
-Un dossier de transport vit plusieurs semaines ou mois, avec des changements externes (horaires, annulation partielle). Dans \texttt{retrieve.controller.js}, la fonction \texttt{keepOnlyMatchingTravelers} réconcilie les passagers rafraîchis depuis le GDS distant avec l'état local, pour éviter de corrompre les enregistrements quand plusieurs agents ouvrent le même dossier.
+Les PNR évoluent après émission (changement d'horaire, annulation partielle, ajout de SSR). Quand deux agents ouvrent le même dossier, un refresh GDS mal fusionné peut écraser des données locales. La fonction \texttt{keepOnlyMatchingTravelers} dans \texttt{retrieve.controller.js} ne garde que les voyageurs encore présents côté GDS ; ce n'est pas une synchronisation bidirectionnelle complète, et certains champs annexes restent gérés manuellement.
 
 \chapter{Réservation, checkout et retarification}
 \label{chap:booking_reshop}
 
-\section{Détection et Gestion des Écarts Tarifaires (Reshopping)}
+\section{Écarts tarifaires (reshopping)}
 
-Le prix affiché à la recherche n'est qu'indicatif : le transporteur ne le garantit contractuellement qu'à l'émission du billet électronique. Pendant la saisie des voyageurs, le \textit{Revenue Management} peut fermer le palier tarifaire ou recalculer taxes et surcharges carburant.
+Pendant la saisie des voyageurs, le \textit{Revenue Management} peut fermer un palier ou recalculer taxes et YQ. Le prix vu à la recherche n'est contractuellement fermé qu'à l'émission.
 
-Pour gérer cet écart sans planter la commande, j'ai mis en place un cycle de \textbf{retarification réactive} (\textit{Reshopping / Reprice}). Le diagramme de séquence de la figure \ref{fig:sequence_reprice} en décrit le déroulé asynchrone.
+La figure \ref{fig:sequence_reprice} décrit le cycle retenu : \texttt{repriceOffer}, éventuel HTTP 409, puis confirmation côté front.
 
 \begin{figure}[H]
 \centering
@@ -219,7 +215,7 @@ Pour gérer cet écart sans planter la commande, j'ai mis en place un cycle de \
 \draw[okreply] ($ (server.south) + (0,-7.8) $) -- node[above, font=\scriptsize\bfseries\color{CobaltBlue}] {10. Réponse HTTP 200 OK (PNR \& Titre de transport émis)} ($ (client.south) + (0,-7.8) $);
 
 \end{tikzpicture}
-\caption{Séquence asynchrone de la retarification lors de la commande de billet}
+\caption{Retarification au checkout}
 \label{fig:sequence_reprice}
 \end{figure}
 
@@ -239,13 +235,13 @@ Le frontend intercepte cette réponse métier et ouvre \texttt{PriceChangeConfir
 
 \node[dialog, text width=13.0cm, inner sep=12pt] (d) {
     % Header
-    {\large\textbf{\color{NavyBlue}Ajustement tarifaire du transporteur}}\\[2pt]
+    {\large\textbf{\color{NavyBlue}Changement de tarif}}\\[2pt]
     {\footnotesize\color{DarkSlate}Vol Aller : Paris Charles-de-Gaulle (CDG) $\rightarrow$ New York (JFK) · Air France AF006}\\[6pt]
     \arrayrulecolor{CobaltBlue!25}
     \begin{tabularx}{\linewidth}{X r}
         \hline
         \rowcolor{AlertRed!8}
-        \multicolumn{2}{p{12.4cm}}{\footnotesize\textcolor{AlertRed}{\textbf{Avis transporteur :} L'inventaire de la classe sélectionnée a été réévalué. Le prix du billet a été actualisé sans rupture de panier.}} \\
+        \multicolumn{2}{p{12.4cm}}{\footnotesize\textcolor{AlertRed}{\textbf{Message transporteur :} le tarif de la classe demandée n'est plus disponible au même prix.}} \\
         \hline
         \textbf{Tarif initialement affiché (recherche) :} & \textcolor{DarkSlate}{432,00\,€} \\
         \textbf{Nouveau tarif réévalué (Air France NDC) :} & \textbf{\color{NavyBlue}446,50\,€} \\
@@ -267,17 +263,17 @@ Le frontend intercepte cette réponse métier et ouvre \texttt{PriceChangeConfir
 };
 
 \end{tikzpicture}
-\caption[Dialogue de confirmation d'écart tarifaire]{Interface du dialogue de confirmation d'écart tarifaire (\texttt{PriceChangeConfirmDialog.vue})}
+\caption[Modale écart de prix]{Modale \texttt{PriceChangeConfirmDialog.vue}}
 \label{fig:modal_price_change}
 \end{figure}
 
 \section{Appairage des passagers avant OrderCreate}
 
-En début de projet, les rejets NDC (Air France, British Airways) étaient fréquents. Les XML d'erreur montraient souvent un détail de saisie : prénom accentué (« Éléonore »), apostrophe (« D'ALMEIDA »), bébé sans siège sans balise de rattachement adulte. Quand un voyageur était retiré du panier, des bagages restaient parfois accrochés à un identifiant fantôme.
+Les XML d'erreur NDC (Air France, British Airways) montraient souvent un détail de saisie : « Éléonore », « D'ALMEIDA », bébé sans siège sans rattachement, bagage accroché à un id fantôme après retrait d'un voyageur.
 
-\texttt{matchesPaxRefId} dans \texttt{orderCreation.utils.ts} (listing \ref{lst:matchespaxrefid}) corrige ces cas : nettoyage ASCII 7-bit, lien nourrisson $\rightarrow$ adulte (\texttt{associatedAdultRefId}), purge des services orphelins.
+Le listing \ref{lst:matchespaxrefid} (\texttt{orderCreation.utils.ts}) couvre le nettoyage ASCII, \texttt{associatedAdultRefId} et la purge des services orphelins.
 
-\begin{lstlisting}[language=TypeScript, caption={Algorithme de réconciliation des passagers et gestion des cas limites (\texttt{orderCreation.utils.ts})}, label={lst:matchespaxrefid}]
+\begin{lstlisting}[language=TypeScript, caption={\texttt{orderCreation.utils.ts} --- appairage passagers}, label={lst:matchespaxrefid}]
 export interface RawTravelerInput {
   id?: string;
   type: 'ADT' | 'CHD' | 'INF';
@@ -378,7 +374,7 @@ export function matchesPaxRefId(
 \chapter{Filtrage multi-compagnies et perfs recherche}
 \label{chap:moteur_recherche}
 
-\section{Composant de Filtrage et Persistance des Préférences}
+\section{Filtres compagnies et préférences}
 
 En SBT entreprise, les travel managers restreignent souvent les résultats aux alliances contractées (SkyTeam, Star Alliance, Oneworld) ou excluent des low-cost.
 
@@ -386,7 +382,7 @@ En SBT entreprise, les travel managers restreignent souvent les résultats aux a
 
 Les préférences vivent dans Pinia pour la session courante et dans le \texttt{localStorage} du navigateur. Pas d'aller-retour SQL pour un simple réglage d'affichage.
 
-\section{Optimisation des Requêtes de Recherche Serveur}
+\section{Optimisation des requêtes de recherche}
 
 Le goulot reste la latence des fournisseurs. Dans \texttt{api-aerial}, \texttt{createShoppingPayload} (\texttt{shopping.utils.js}) filtre les compagnies exclues \emph{avant} de construire le XML/JSON. On n'appelle que les connecteurs utiles, au lieu d'interroger tout le monde pour jeter ensuite. Sur les recherches complexes, le gain se compte en centaines de millisecondes.
 
@@ -395,39 +391,35 @@ Deux autres réglages : paramètre \texttt{'W'} injecté dans les requêtes Sabr
 \chapter{Multi-devises et calculs tarifaires}
 \label{chap:architecture_financiere}
 
-\section{Résolution Asynchrone de la Devise Point de Vente}
+\section{Devise du point de vente}
 
 Sur le module facturation / conversion, les SQL synchrones qui résolvaient \texttt{agencyCurrency} saturaient le pool dès que plusieurs agences lançaient des recherches en parallèle. Un paramètre quasi statique bloquait tout le pipeline tarifaire.
 
-J'ai déporté la résolution dans un middleware Express asynchrone avec cache mémoire de dix minutes. La devise est lue une fois en tête de requête, injectée dans \texttt{req.context.posCurrency}, puis réutilisée sans nouvel accès SQL. Contention base en baisse, temps de traitement aussi.
+J'ai déporté la résolution dans un middleware Express asynchrone avec cache mémoire de dix minutes. La devise est lue une fois en tête de requête, injectée dans \texttt{req.context.posCurrency}, puis réutilisée sans nouvel accès SQL. Une invalidation Redis serait plus réactive ; pour une donnée rarement modifiée, le cache local a été jugé suffisant.
 
-Ce n'est pas la solution « idéale » : une invalidation Redis / webhook serait plus fine. Pour une donnée touchée une fois par an par les admins, un cache mémoire Node.js de dix minutes restait le compromis le plus simple à opérer.
-
-\section{Formatage Dynamique et Norme ISO 4217}
+\section{Formatage et norme ISO 4217}
 
 Le multi-devises impose ISO 4217. \texttt{formatPrice} et \texttt{OrderRecap.vue} doivent gérer deux décimales (EUR, USD, GBP), zéro (JPY, KRW) et trois (TND, KWD).
 
-Pour les taxes aéroportuaires, on applique l'arrondi bancaire au pair le plus proche (\textit{banker's rounding}). Contrairement à \texttt{Math.round}, qui pousse toujours les demis vers le haut et biaise les totaux sur de gros volumes, l'arrondi bancaire alterne vers le pair. Objectif : égalité stricte entre total facturé et somme des taxes, sans centime parasite.
+Pour les taxes aéroportuaires, l'arrondi bancaire au pair le plus proche (\textit{banker's rounding}) remplace \texttt{Math.round}, qui poussait toujours les demis vers le haut et biaise les totaux sur de gros volumes. On cherche l'égalité entre total facturé et somme des taxes.
 
 \chapter{Back-Office et paramétrage des agences}
 \label{chap:backoffice_admin}
 
-\section{Interface de Paramétrage des Points de Vente}
+\section{Paramétrage des points de vente}
 
 \textbf{\texttt{front-dashboard}} (Nuxt~3, Vuetify~3) sert aux administrateurs à configurer les accès techniques de chaque agence.
 
 On y saisit PCC Sabre (\textit{Pseudo City Code}), Office ID Amadeus et numéro IATA. Par réseau : devise par défaut du POS, marge sur les billets, activation des segments passifs selon les besoins comptables.
 
-\section{Synchronisation par Lots des Profils Voyageurs Sabre}
+\section{Import par lots des profils Sabre}
 
-Importer plusieurs centaines de collaborateurs d'un coup saturait les quotas SOAP Sabre et déclenchait des refus en série.
-
-\texttt{DialogUpdateSabre.vue} et \texttt{DialogImportProfil.vue} découpent l'import en paquets de 50 profils (\textit{chunking}). Coupure réseau au milieu : on reprend uniquement le paquet interrompu, pas tout l'import.
+Les imports massifs de profils voyageurs ont saturé les quotas SOAP Sabre tant que les appels partaient tous en parallèle. Les dialogues \texttt{DialogUpdateSabre.vue} et \texttt{DialogImportProfil.vue} découpent le travail par paquets de 50.
 
 \chapter{Tests et mesures en production}
 \label{chap:assurance_qualite}
 
-\section{Suite de Tests Unitaires et d'Intégration}
+\section{Tests unitaires et d'intégration}
 
 Les calculs de prix et les flux d'émission sont couverts par des tests sur la CI/CD :
 
@@ -435,28 +427,10 @@ Les calculs de prix et les flux d'émission sont couverts par des tests sur la C
 
 \texttt{pricingConsistency.utils.test.js} vérifie $\text{Total} = \text{Base} + \sum \text{Taxes}$ sur EUR, USD, TND, JPY (arrondi bancaire). \texttt{shopping.utils.test.js} contrôle le filtrage compagnies et le formatage des fenêtres ISO 8601.
 
-\section{Résultats Mesurés en Production}
+\section{Mesures en production}
 
-Le tableau \ref{tab:comparatif_avant_apres} synthétise les métriques avant / après, d'après logs Winston et Sentry.
+Avant les correctifs d'appairage, environ 8,4\,\% des créations d'ordre NDC échouaient pour des raisons applicatives (PaxRefID, services orphelins), d'après Winston/Sentry sur le parc suivi (hors indispos transporteurs). Après, nous sommes restés sous 0,1\,\% sur la même définition.
 
-\begin{table}[H]
-\centering
-\small
-\renewcommand{\arraystretch}{1.3}
-\arrayrulecolor{CobaltBlue!25}
-\begin{tabularx}{\textwidth}{>{\columncolor{CobaltBlue!5}\bfseries}p{3.0cm} p{5.0cm} X}
-\hline
-\rowcolor{CobaltBlue!12}
-\textbf{\color{NavyBlue}Indicateur} & \textbf{\color{NavyBlue}État Initial (Avant Réalisations)} & \textbf{\color{NavyBlue}État Final (Après Déploiement)} \\
-\hline
-Taux d'Échec Création d'Ordre & 8,4\,\% d'erreurs (rejets par les compagnies pour décalages \texttt{PaxRefID} ou services orphelins). & \textbf{$<$ 0,1\,\%} d'erreurs applicatives (hors indisponibilités compagnies). \\
-Gestion Variations Tarifaires & Abandon systématique du panier lors d'une hausse de prix en vol. & \textbf{Flux réactif de reprise (409)} : 92\,\% des paniers réajustés sont finalisés sans ressaisie. \\
-Accès Base (Devise POS) & Requêtes SQL bloquantes synchrones à chaque appel de contrôleur. & \textbf{Middleware asynchrone + cache LRU} : suppression du goulot d'étranglement I/O. \\
-Segments Passifs \& Risque ADM & Risque d'écritures en doublon Sabre/Amadeus et pénalités de facturation. & \textbf{Découplage strict en base} : zéro litige ADM pour duplication constaté sur 2 ans. \\
-Temps Réponse Recherche & Moyenne de 4,2\,s sur 10\,000 requêtes multi-fournisseurs. & \textbf{Réduction à 3,0\,s (-28\,\%)} grâce au filtrage en amont et à l'optimisation des payloads. \\
-Volume et Qualité du Code & Code JavaScript hétérogène et typage partiel. & \textbf{+192\,630 lignes nettes} maintenues, 100\,\% typées TypeScript sur le front et testées. \\
-\hline
-\end{tabularx}
-\caption{Synthèse factuelle et chiffrée des impacts d'ingénierie sur la plateforme Metis}
-\label{tab:comparatif_avant_apres}
-\end{table}
+Pour les paniers encore associés à une offre après un HTTP 409, environ 92\,\% ont pu être finalisés via la modale sur la période observée. En campagne de tests (10\,000 requêtes multi-fournisseurs), la latence moyenne de recherche est passée d'environ 4,2\,s à 3,0\,s après filtrage amont.
+
+Sur deux ans, pas d'ADM relevé pour double écriture passive Sabre/Amadeus après le découplage POS. Le mix de compagnies et le volume influencent ces ordres de grandeur.

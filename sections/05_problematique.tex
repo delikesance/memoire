@@ -1,50 +1,20 @@
 \chapter{Problématique technique}
 \label{chap:problematique}
 
-\section{Ce qui casse en production}
+\section{Écarts GDS / NDC dans le panier}
 
-En distribution aérienne B2B, les agences veulent une plateforme rapide, des montants exacts au centime et des réservations qui passent. Une erreur technique se paie cash : vente bloquée au comptoir, voyageur coincé, ou pénalité financière.
+En billetterie B2B, une erreur applicative se traduit souvent par une vente bloquée, un voyageur empêché de partir, ou une pénalité financière.
 
-Faire cohabiter GDS (Sabre, Amadeus) et NDC IATA dans le même moteur fait apparaître plusieurs écarts qui ne se résolvent pas avec le même pattern.
+Sabre, par exemple, conserve un état de session et peut bloquer des places pendant le parcours. Les API NDC raisonnent plutôt en requêtes indépendantes : l'offre vit le temps d'un identifiant temporaire. Metis Connect mélange les deux dans la même interface. Entre la sélection du vol et le paiement, après saisie des passagers, une classe peut se fermer ou des taxes peuvent être recalculées. Si l'application se contente de renvoyer une erreur opaque, l'utilisateur doit tout recommencer. S'ajoutent les contrôles sur les noms, le rattachement des bébés sans siège, les devises, et l'écriture de segments passifs destinés aux logiciels comptables des agences.
 
-Sabre travaille en sessions synchrones avec état (\textit{stateful}) et bloque les places en amont. Les API NDC envoient des requêtes web sans état (\textit{stateless}) : l'\texttt{OfferID} expire en quelques minutes. Ce n'est pas le même contrat temporel.
+La question de page de garde résume ce périmètre. Certaines limites n'ont apparu qu'après plusieurs mois d'exploitation.
 
-Entre la sélection du vol et le paiement --- passagers déjà saisis --- le transporteur peut fermer une classe ou recalculer les taxes. Un système trop raide renvoie une erreur brute et force la ressaisie complète.
+\section{Choix de conception}
 
-Les API NDC rejettent aussi dès qu'un accent est mal nettoyé, qu'un \texttt{PaxRefID} ne colle pas à un bagage, ou qu'un bébé sans siège n'est pas rattaché à son accompagnant. S'y ajoutent ISO 4217 et l'obligation d'écrire des segments passifs dans les GDS pour les ERP agences --- sinon ADM.
+Pour ne pas dupliquer la logique d'affichage, les réponses transporteurs sont ramenées à un modèle commun avant d'arriver au frontend. On a pu brancher de nouvelles compagnies sans réécrire les écrans du panier. Les offres « branded » ont ensuite forcé un champ fourre-tout côté métadonnées, faute de pouvoir tout typer proprement.
 
-\vspace{0.4cm}
-\begin{quote}
-\centering
-\large\itshape\color{NavyBlue}
-«~Comment garantir la cohérence transactionnelle et tarifaire au sein d'un moteur de réservation de billets d'avion agrégeant des protocoles hybrides (GDS et NDC) ?~»
-\end{quote}
-\vspace{0.4cm}
+Sur la création d'ordre, un module d'appairage normalise les noms, rattache les nourrissons et retire les bagages orphelins. Le cas de deux homonymes sur le même dossier a nécessité un correctif ultérieur.
 
-\section{Pistes de conception retenues}
+Lorsque le transporteur signale un conflit tarifaire, une modale affiche l'écart tout en gardant les passagers déjà saisis. Cela ne résout pas les situations où le vol n'existe plus.
 
-Pour éviter de réécrire l'appli à chaque nouveau connecteur, quatre pistes ont été posées --- avec leurs limites dès le départ.
-
-\subsection{Normaliser les payloads transporteurs (\texttt{SabreAdapter.ts})}
-
-Les formats divergent. Une couche d'adaptateurs convertit SOAP Sabre et JSON/XML NDC vers un modèle pivot (\texttt{CanonicalFlightOffer}). On branche British Airways, Turkish ou Aegean sans retoucher les écrans ni la logique panier.
-
-Risque : le « plus petit dénominateur commun ». Un modèle trop strict efface des infos propres à certaines compagnies (bagages spécifiques, règles de surclassement).
-
-\subsection{Appairer les passagers et tenir ISO 4217}
-
-La plupart des rejets viennent d'identifiants mal alignés avec les bagages, ou d'arrondis de taxes. Un appairage via \texttt{matchesPaxRefId}, plus une gestion asynchrone des devises, doit éliminer l'essentiel des rejets techniques.
-
-Le traitement nettoie les accents, force le lien bébé $\rightarrow$ adulte (\texttt{associatedAdultRefId}) et purge les bagages orphelins. Limite assumée : deux passagers au même nom/prénom sur un même dossier. Critère : rejet applicatif sous 0,1\,\% en production.
-
-\subsection{Intercepter le 409 et confirmer le nouveau tarif}
-
-Une hausse qui coupe net la réservation abandonne le panier. Un reprice asynchrone + modale \texttt{PriceChangeConfirmDialog.vue} (écart détaillé, passagers conservés dans Pinia) doit sauver la commande sans casser le parcours.
-
-Limite : l'ampleur de l'écart. Quelques euros de taxes, souvent accepté ; vol disparu ou +300\,€, il faut relancer la recherche. Critère : au moins 90\,\% des paniers réajustés sur de faibles écarts aboutissent à une émission.
-
-\subsection{Découper les segments passifs par point de vente}
-
-Le risque ADM vient surtout de segments passifs écrits en double sur Sabre et Amadeus pour un même billet NDC. Paramètres découpés par POS en base, plus une règle d'exclusion (pas d'écriture Amadeus si le dossier est traité sur Sabre).
-
-Compromis : Gestour et IEnterprise ont chacun leurs tolérances de parsing. Vérification : zéro ADM pour double écriture sur le parc pendant deux ans.
+Les paramètres d'écriture passive ont été isolés par point de vente, avec une règle empêchant une écriture redondante sur le second GDS.

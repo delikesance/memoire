@@ -1,32 +1,18 @@
 \chapter{Introduction}
 \label{chap:introduction}
 
-\section{Contexte : GDS, NDC et voyage d'affaires}
+\section{Contexte}
 
-Émettre un billet d'avion en B2B reste une opération critique. Les plateformes doivent interroger des inventaires mondiaux en quelques secondes et produire des montants exacts au centime près pour la comptabilité des agences.
+J'ai effectué mon alternance chez Everbloo d'octobre 2023 à novembre 2026, principalement sur Metis. La plateforme sert des réseaux d'agences (TourCom) et des comptes entreprises. Pour afficher une offre, elle interroge Sabre, Amadeus et plusieurs connecteurs NDC (Air France-KLM, British Airways, Lufthansa Group, selon les contrats).
 
-Pendant des décennies, cette distribution a transité exclusivement par les \textit{Global Distribution Systems} (GDS), surtout Sabre et Amadeus. Protocoles issus d'EDIFACT, sessions synchrones avec état : le serveur tient le dossier passager (\textit{Passenger Name Record} ou PNR), bloque temporairement les sièges, puis enchaîne jusqu'à l'émission.
-
-Les compagnies déploient aussi la norme \textbf{NDC} (\textit{New Distribution Capability}) de l'IATA. API web (REST JSON / XML), vente en direct hors GDS, \textit{dynamic pricing}, options payantes (\textit{ancillaries} : bagages, siège, coupe-file).
-
-Sur \textbf{Metis} (Everbloo, réseaux comme TourCom, clients entreprises), les deux stacks cohabitent dans la même appli : flux GDS (cryptique ou SOAP, verrouillage de places) et flux NDC directs (Air France-KLM, British Airways, Lufthansa Group) où l'offre n'est qu'un jeton temporaire.
+Sabre et Amadeus s'appuient encore beaucoup sur des sessions avec état (EDIFACT, SOAP, cryptique). NDC expose des API web avec des \texttt{OfferID} qui expirent. Les résultats se retrouvent dans le même panier, ce qui crée des problèmes de cohérence de prix et de dossiers passagers.
 
 \section{Problématique}
 
-Sur Metis Connect, le parcours type est recherche $\rightarrow$ sélection $\rightarrow$ saisie des voyageurs $\rightarrow$ paiement. Entre l'affichage du prix et la validation du panier, le transporteur peut fermer une classe ou recalculer les taxes d'aéroport.
+Le tarif de la recherche n'est pas toujours disponible à l'émission. Les noms doivent passer les contrôles IATA. Un bébé sans siège doit être rattaché à un adulte. Les devises suivent ISO 4217. Une écriture passive incorrecte peut déclencher un ADM.
 
-Le moteur ne peut pas débiter un montant différent sans prévenir le client. Il ne peut pas non plus jeter le panier. S'ajoutent ISO 4217 et les règles IATA sur les noms / bébés sans siège : un écart suffit à bloquer l'émission.
+La question est écrite en page de garde. Stack utilisée : Node.js / Sequelize, Nuxt~3 / Vue~3 / TypeScript.
 
-\vspace{0.4cm}
-\begin{quote}
-\centering
-\large\itshape\color{NavyBlue}
-«~Comment garantir la cohérence transactionnelle et tarifaire d'un moteur de réservation aérien agrégeant des protocoles hybrides (GDS et NDC) ?~»
-\end{quote}
-\vspace{0.4cm}
+\section{Organisation}
 
-En production, la réponse retenue combine une API Node.js (Sequelize) et des interfaces Nuxt~3 / Vue~3 en TypeScript.
-
-\section{Plan du document}
-
-Trois parties : contexte Everbloo / stack Metis et les quatre pistes de conception ; livraisons (adaptateurs, recherche, terminal cryptique, reshopping, appairage passagers, multi-devises, tests) ; résultats, trois incidents de prod, organisation du travail, et le lien avec le RNCP.
+Entreprise et stack, réalisations, limites, RNCP. Pas strictement chronologique.
