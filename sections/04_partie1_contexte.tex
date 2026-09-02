@@ -6,7 +6,7 @@
 
 \section{L'entreprise d'accueil}
 
-Everbloo est l'entreprise où j'ai passé mon alternance (38 mois). Elle est dirigée par \textbf{Reouven SAMAMA}, dans le 11\textsuperscript{e} à Paris. On y développe surtout des outils pour le tourisme et le voyage d'affaires. TourCom est un client important (réseau d'agences). Il y a aussi «~Agence et Vous~», branché sur les ERP des agences.
+Everbloo est l'entreprise où j'ai passé mon alternance (38 mois). Elle est dirigée par \textbf{Reouven SAMAMA}, dans le 11\textsuperscript{e} à Paris. On y développe surtout des outils pour le tourisme et le voyage d'affaires ; TourCom est un client important (réseau d'agences), et il y a aussi «~Agence et Vous~», branché sur les ERP des agences. Au quotidien, une bonne partie du travail consiste à digérer des protocoles transport et à garder des temps de réponse acceptables quand plusieurs fournisseurs répondent en parallèle --- ce qui n'est pas toujours le cas.
 
 \begin{figure}[H]
 \centering
@@ -14,8 +14,6 @@ Everbloo est l'entreprise où j'ai passé mon alternance (38 mois). Elle est dir
 \caption{Logo Everbloo}
 \label{fig:logo_everbloo}
 \end{figure}
-
-Au quotidien, une bonne partie du travail consiste à digérer des protocoles transport et à garder des temps de réponse acceptables quand plusieurs fournisseurs répondent en parallèle.
 
 \section{La plateforme Metis}
 
@@ -100,9 +98,9 @@ Sur la durée : 1\,554 commits, +595\,310 / $-$402\,680 lignes, 1\,869 fichiers 
 
 \section{Stack et environnement de développement}
 
-Le backend tourne sous Node.js / Express. Sequelize gère MySQL et PostgreSQL (migrations versionnées). L'auth passe par Keycloak (OpenID Connect, JWT). Les fronts sont en Nuxt~3 / Vue~3 (Composition API), Vuetify~3, Pinia, avec typage TypeScript.
+Le backend tourne sous Node.js / Express. Sequelize gère MySQL et PostgreSQL, avec des migrations versionnées --- on a les deux bases parce que le métier aérien et le back-office n'ont pas suivi le même historique. L'auth passe par Keycloak (OpenID Connect, JWT). Les fronts sont en Nuxt~3 / Vue~3 (Composition API), Vuetify~3, Pinia, typés en TypeScript.
 
-En local, Devenv (Nix) et Pixi figent les versions Node et la compilation de modules natifs (\texttt{bcrypt}, \texttt{libxmljs}). Concurrently lance les services ensemble. Les tests utilisent Mocha / Chai et Playwright.
+En local, Devenv (Nix) et Pixi figent les versions Node et la compilation de modules natifs (\texttt{bcrypt}, \texttt{libxmljs}), ce qui évite surtout les divergences Windows / Linux sur \texttt{libxmljs}. Concurrently lance les services ensemble. Les tests utilisent Mocha / Chai et Playwright.
 
 \section{Découpage des services}
 
@@ -188,4 +186,4 @@ Le moteur de réservation et le back-office sont séparés. Le tableau \ref{tab:
 
 \section{Passage à la problématique}
 
-Sabre répond souvent en 800--1\,200\,ms ; certaines API NDC mettent 3--6\,s. Au checkout, l'offre peut être expirée ou repricée. Les segments passifs et le multi-devises ajoutent le risque ADM.
+Sabre répond souvent en 800--1\,200\,ms ; certaines API NDC mettent 3--6\,s, et ce n'est pas stable d'une heure à l'autre. Au checkout, l'offre peut être expirée ou repricée. Les segments passifs et le multi-devises ajoutent un risque ADM qui n'apparaît parfois que des semaines plus tard, quand le transporteur audit le dossier.

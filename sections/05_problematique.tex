@@ -3,18 +3,18 @@
 
 \section{Écarts GDS / NDC dans le panier}
 
-En billetterie B2B, une erreur applicative se traduit souvent par une vente bloquée, un voyageur empêché de partir, ou une pénalité financière.
+En billetterie B2B, une erreur applicative se traduit souvent par une vente bloquée, un voyageur empêché de partir, ou une pénalité financière. Ce n'est pas un détail d'UX.
 
-Sabre, par exemple, conserve un état de session et peut bloquer des places pendant le parcours. Les API NDC raisonnent plutôt en requêtes indépendantes : l'offre vit le temps d'un identifiant temporaire. Metis Connect mélange les deux dans la même interface. Entre la sélection du vol et le paiement, après saisie des passagers, une classe peut se fermer ou des taxes peuvent être recalculées. Si l'application se contente de renvoyer une erreur opaque, l'utilisateur doit tout recommencer. S'ajoutent les contrôles sur les noms, le rattachement des bébés sans siège, les devises, et l'écriture de segments passifs destinés aux logiciels comptables des agences.
+Sabre, par exemple, conserve un état de session et peut bloquer des places pendant le parcours. Les API NDC raisonnent plutôt en requêtes indépendantes : l'offre vit le temps d'un identifiant temporaire. Metis Connect mélange les deux dans la même interface, ce qui est pratique pour l'agent mais complique tout ce qui touche à la cohérence. Entre la sélection du vol et le paiement, après saisie des passagers, une classe peut se fermer ou des taxes peuvent être recalculées --- parfois les deux à la fois. Si l'application se contente de renvoyer une erreur opaque, l'utilisateur doit tout recommencer, y compris les noms IATA déjà validés.
 
-La question de page de garde résume ce périmètre. Certaines limites n'ont apparu qu'après plusieurs mois d'exploitation.
+S'ajoutent les contrôles sur les noms, le rattachement des bébés sans siège, les devises, et l'écriture de segments passifs destinés aux logiciels comptables des agences. La question de page de garde recouvre ce périmètre. Certaines limites n'ont apparu qu'après plusieurs mois d'exploitation, pas au moment du design.
 
 \section{Choix de conception}
 
-Pour ne pas dupliquer la logique d'affichage, les réponses transporteurs sont ramenées à un modèle commun avant d'arriver au frontend. On a pu brancher de nouvelles compagnies sans réécrire les écrans du panier. Les offres « branded » ont ensuite forcé un champ fourre-tout côté métadonnées, faute de pouvoir tout typer proprement.
+Pour ne pas dupliquer la logique d'affichage, les réponses transporteurs sont ramenées à un modèle commun avant d'arriver au frontend. Ça a permis de brancher de nouvelles compagnies sans réécrire les écrans du panier. En contrepartie, les offres « branded » ont ensuite forcé un champ fourre-tout côté métadonnées : on n'avait pas prévu de tout typer proprement, et on ne l'a toujours pas fait.
 
-Sur la création d'ordre, un module d'appairage normalise les noms, rattache les nourrissons et retire les bagages orphelins. Le cas de deux homonymes sur le même dossier a nécessité un correctif ultérieur.
+Sur la création d'ordre, un module d'appairage normalise les noms, rattache les nourrissons et retire les bagages orphelins. Le cas de deux homonymes sur le même dossier n'était pas dans les tests initiaux ; le correctif est venu plus tard, après un ticket support.
 
-Lorsque le transporteur signale un conflit tarifaire, une modale affiche l'écart tout en gardant les passagers déjà saisis. Cela ne résout pas les situations où le vol n'existe plus.
+Lorsque le transporteur signale un conflit tarifaire, une modale affiche l'écart tout en gardant les passagers déjà saisis. Ça aide surtout quand le vol existe encore à un autre prix. Quand le vol n'existe plus, on n'a pas grand-chose à proposer.
 
-Les paramètres d'écriture passive ont été isolés par point de vente, avec une règle empêchant une écriture redondante sur le second GDS.
+Les paramètres d'écriture passive ont été isolés par point de vente, avec une règle empêchant une écriture redondante sur le second GDS. Le reste des frictions avec les ERP agences n'est pas résolu par ce découplage.

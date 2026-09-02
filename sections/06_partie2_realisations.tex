@@ -19,9 +19,9 @@ L'écran couvre allers simples, allers-retours et multi-destinations. L'utilisat
 
 \section{Normalisation des offres via adaptateurs}
 
-Sabre renvoie du SOAP ou du texte brut. Les NDC directs (Air France-KLM, British Airways, Aegean, Turkish) répondent en JSON ou XML. Sans couche commune, le frontend accumulait des branches par transporteur.
+Sabre renvoie du SOAP ou du texte brut. Les NDC directs (Air France-KLM, British Airways, Aegean, Turkish) répondent en JSON ou XML, parfois les deux selon l'endpoint. Sans couche commune, le frontend accumulait des branches par transporteur, et chaque nouvelle compagnie recopiait des bugs déjà corrigés ailleurs.
 
-Le listing \ref{lst:sabreadapter} montre \texttt{SabreAdapter.ts} : les payloads arrivent dans \texttt{CanonicalFlightOffer}. Ensuite, recherche et panier ne voient plus qu'une structure TypeScript.
+Le listing \ref{lst:sabreadapter} montre \texttt{SabreAdapter.ts} : les payloads arrivent dans \texttt{CanonicalFlightOffer}. Ensuite, recherche et panier ne voient plus qu'une structure TypeScript. Les limites de ce modèle sont décrites plus loin ; ici, c'est surtout ce qui a permis de livrer sans dupliquer les écrans.
 
 \begin{lstlisting}[language=TypeScript, caption={\texttt{SabreAdapter.ts}}, label={lst:sabreadapter}]
 export interface SabreFlightLeg {
@@ -145,7 +145,9 @@ Plutôt que de les renvoyer vers un émulateur externe, j'ai intégré une modal
 
 Un billet émis en NDC direct est enregistré chez le transporteur, hors inventaire actif du GDS de l'agence. Pourtant, pour que Gestour, IEnterprise ou l'équivalent génère la facture et les flux de trésorerie, un \textbf{segment passif} informatif doit être posé dans le GDS de référence de l'agence.
 
-Une mauvaise coordination produit des doubles écritures passives --- ou des écritures incohérentes --- sanctionnées par des avis de débit (\textit{Agency Debit Memos} / ADM). La migration \texttt{split-passive-segment-options} isole les paramètres d'écriture passive par point de vente. Avant notification, le contrôleur vérifie le canal d'émission : dossier traité sur Sabre $\Rightarrow$ écriture passive Amadeus désactivée.
+Une mauvaise coordination produit des doubles écritures passives, ou des écritures incohérentes, ensuite sanctionnées par des avis de débit (\textit{Agency Debit Memos} / ADM). Ce n'est pas théorique : le montant peut atteindre plusieurs milliers d'euros par dossier, et le transporteur n'attend pas que l'on ait fini de déboguer.
+
+La migration \texttt{split-passive-segment-options} isole les paramètres d'écriture par point de vente. Avant notification, le contrôleur vérifie le canal d'émission : dossier traité sur Sabre $\Rightarrow$ écriture passive Amadeus désactivée. Ça coupe le cas le plus fréquent. Ça ne dit rien des ERP qui refusent ensuite la ligne pour une raison de format.
 
 \section{Synchronisation des PNR}
 
@@ -269,9 +271,9 @@ Le frontend intercepte cette réponse métier et ouvre \texttt{PriceChangeConfir
 
 \section{Appairage des passagers avant OrderCreate}
 
-Les XML d'erreur NDC (Air France, British Airways) montraient souvent un détail de saisie : « Éléonore », « D'ALMEIDA », bébé sans siège sans rattachement, bagage accroché à un id fantôme après retrait d'un voyageur.
+Les XML d'erreur NDC (Air France, British Airways) montraient souvent un détail de saisie : « Éléonore », « D'ALMEIDA », bébé sans siège sans rattachement, bagage accroché à un id fantôme après retrait d'un voyageur. Ce n'était pas toujours le même bug ; c'était souvent le même pipeline d'appairage qui laissait passer un état incohérent.
 
-Le listing \ref{lst:matchespaxrefid} (\texttt{orderCreation.utils.ts}) couvre le nettoyage ASCII, \texttt{associatedAdultRefId} et la purge des services orphelins.
+Le listing \ref{lst:matchespaxrefid} (\texttt{orderCreation.utils.ts}) couvre le nettoyage ASCII, \texttt{associatedAdultRefId} et la purge des services orphelins. Les homonymes, eux, sont restés un trou jusqu'au ticket support décrit plus loin.
 
 \begin{lstlisting}[language=TypeScript, caption={\texttt{orderCreation.utils.ts} --- appairage passagers}, label={lst:matchespaxrefid}]
 export interface RawTravelerInput {
@@ -384,18 +386,18 @@ Les préférences vivent dans Pinia pour la session courante et dans le \texttt{
 
 \section{Optimisation des requêtes de recherche}
 
-Le goulot reste la latence des fournisseurs. Dans \texttt{api-aerial}, \texttt{createShoppingPayload} (\texttt{shopping.utils.js}) filtre les compagnies exclues \emph{avant} de construire le XML/JSON. On n'appelle que les connecteurs utiles, au lieu d'interroger tout le monde pour jeter ensuite. Sur les recherches complexes, le gain se compte en centaines de millisecondes.
+Le goulot reste la latence des fournisseurs, pas le SQL local. Dans \texttt{api-aerial}, \texttt{createShoppingPayload} (\texttt{shopping.utils.js}) filtre les compagnies exclues \emph{avant} de construire le XML/JSON, pour ne pas interroger tout le monde puis jeter. Sur les recherches complexes, on gagne souvent quelques centaines de millisecondes ; ce n'est pas spectaculaire, mais ça se sent quand trois connecteurs NDC répondent déjà en plusieurs secondes.
 
-Deux autres réglages : paramètre \texttt{'W'} injecté dans les requêtes Sabre pour privilégier les directs (demande fréquente en voyage d'affaires) ; dates normalisées en ISO 8601 via \texttt{createDepartureWindow}, pour que Sabre et NDC interprètent la même fenêtre horaire.
+Deux autres réglages, sans rapport l'un avec l'autre : un paramètre \texttt{'W'} injecté dans les requêtes Sabre pour privilégier les directs (demande fréquente en voyage d'affaires), et des dates normalisées en ISO 8601 via \texttt{createDepartureWindow} pour que Sabre et NDC interprètent la même fenêtre horaire. Le second a surtout évité des décalages d'un jour sur les fuseaux.
 
 \chapter{Multi-devises et calculs tarifaires}
 \label{chap:architecture_financiere}
 
 \section{Devise du point de vente}
 
-Sur le module facturation / conversion, les SQL synchrones qui résolvaient \texttt{agencyCurrency} saturaient le pool dès que plusieurs agences lançaient des recherches en parallèle. Un paramètre quasi statique bloquait tout le pipeline tarifaire.
+Sur le module facturation / conversion, les SQL synchrones qui résolvaient \texttt{agencyCurrency} saturaient le pool dès que plusieurs agences lançaient des recherches en parallèle. On avait un paramètre quasi statique qui bloquait tout le pipeline tarifaire, ce qui n'était pas évident tant qu'on regardait uniquement les temps d'appel Sabre.
 
-J'ai déporté la résolution dans un middleware Express asynchrone avec cache mémoire de dix minutes. La devise est lue une fois en tête de requête, injectée dans \texttt{req.context.posCurrency}, puis réutilisée sans nouvel accès SQL. Une invalidation Redis serait plus réactive ; pour une donnée rarement modifiée, le cache local a été jugé suffisant.
+J'ai déporté la résolution dans un middleware Express asynchrone, avec un cache mémoire de dix minutes. La devise est lue une fois en tête de requête, injectée dans \texttt{req.context.posCurrency}, puis réutilisée. Une invalidation Redis serait plus réactive ; pour une donnée que les agences changent rarement, le cache local a tenu. Si quelqu'un change la devise d'un POS en journée, il faut encore attendre l'expiration --- on l'a accepté.
 
 \section{Formatage et norme ISO 4217}
 
@@ -421,16 +423,14 @@ Les imports massifs de profils voyageurs ont saturé les quotas SOAP Sabre tant 
 
 \section{Tests unitaires et d'intégration}
 
-Les calculs de prix et les flux d'émission sont couverts par des tests sur la CI/CD :
+Les calculs de prix et les flux d'émission sont couverts par des tests sur la CI/CD, surtout là où un écart de centime ou un PaxRefID faux se paie en rejet transporteur.
 
-\texttt{orderCreation.utils.test.js} (Mocha/Chai) exerce \texttt{matchesPaxRefId} sur une quarantaine de cas réels : bébés multiples, noms à particules, bagages orphelins.
-
-\texttt{pricingConsistency.utils.test.js} vérifie $\text{Total} = \text{Base} + \sum \text{Taxes}$ sur EUR, USD, TND, JPY (arrondi bancaire). \texttt{shopping.utils.test.js} contrôle le filtrage compagnies et le formatage des fenêtres ISO 8601.
+\texttt{orderCreation.utils.test.js} (Mocha/Chai) exerce \texttt{matchesPaxRefId} sur une quarantaine de cas repris de tickets : bébés multiples, noms à particules, bagages orphelins. \texttt{pricingConsistency.utils.test.js} vérifie $\text{Total} = \text{Base} + \sum \text{Taxes}$ sur EUR, USD, TND, JPY (arrondi bancaire). \texttt{shopping.utils.test.js} contrôle le filtrage compagnies et le formatage des fenêtres ISO 8601. Je n'ai pas la même densité de tests sur le terminal cryptique ni sur les imports de profils.
 
 \section{Mesures en production}
 
-Avant les correctifs d'appairage, environ 8,4\,\% des créations d'ordre NDC échouaient pour des raisons applicatives (PaxRefID, services orphelins), d'après Winston/Sentry sur le parc suivi (hors indispos transporteurs). Après, nous sommes restés sous 0,1\,\% sur la même définition.
+Les taux d'échec NDC viennent des événements Sentry et des logs Winston sur \texttt{api-aerial}, filtrés sur les actions de type création d'ordre. On a exclu les indisponibilités clairement identifiées côté transporteur (timeouts, HTTP 5xx amont). Sur cette définition, avant les correctifs d'appairage, environ 8,4\,\% des créations d'ordre NDC échouaient pour des raisons applicatives (PaxRefID, services orphelins). Après déploiement, nous sommes restés sous 0,1\,\%. Ce n'est pas une étude statistique formelle : le mix de compagnies a bougé, et le volume n'est pas constant d'un mois sur l'autre.
 
-Pour les paniers encore associés à une offre après un HTTP 409, environ 92\,\% ont pu être finalisés via la modale sur la période observée. En campagne de tests (10\,000 requêtes multi-fournisseurs), la latence moyenne de recherche est passée d'environ 4,2\,s à 3,0\,s après filtrage amont.
+Pour les paniers encore associés à une offre après un HTTP 409, nous avons compté, sur la période observée dans les logs front, ceux qui aboutissaient à une émission via la modale --- de l'ordre de 92\,\%. Les cas sans nouvelle offre (vol fermé) n'entrent pas dans ce dénominateur.
 
-Sur deux ans, pas d'ADM relevé pour double écriture passive Sabre/Amadeus après le découplage POS. Le mix de compagnies et le volume influencent ces ordres de grandeur.
+La latence de recherche (4,2\,s puis 3,0\,s en moyenne) a été mesurée lors de campagnes de tests internes, sur 10\,000 requêtes multi-fournisseurs, pas sur l'intégralité du trafic production. Sur deux ans d'exploitation suivie, nous n'avons pas relevé d'ADM pour double écriture passive Sabre/Amadeus après le découplage POS.

@@ -45,7 +45,7 @@ Taxe IZ & Taxe de solidarité (dite « taxe Chirac ») figurant dans la ventilat
     \item \textbf{Hardt, D.} (ed.) (2012). \textit{The OAuth 2.0 Authorization Framework}. RFC~6749. IETF. Sections 1.5 (Refresh Token) et 10 (Security Considerations). \url{https://datatracker.ietf.org/doc/html/rfc6749}
     \item \textbf{Jones, M., Bradley, J., \& Sakimura, N.} (2015). \textit{JSON Web Token (JWT)}. RFC~7519. IETF. \url{https://datatracker.ietf.org/doc/html/rfc7519}
     \item \textbf{International Organization for Standardization.} (2015). \textit{ISO 4217:2015 --- Codes for the representation of currencies and funds}. ISO, Geneva. (précision décimale par devise).
-    \item \textbf{International Air Transport Association (IATA).} (2021). \textit{NDC Implementation Guide}, version 21.3. Messages \texttt{AirShoppingRQ/RS}, \texttt{OfferPriceRQ/RS}, \texttt{OrderCreateRQ/RS} ; éléments \texttt{Pax}, \texttt{PaxRefID}, \texttt{OrderItem}. IATA Publications, Montreal--Geneva.
+    \item \textbf{International Air Transport Association (IATA).} (2021). \textit{NDC Implementation Guide}, version 21.3. Messages \texttt{AirShoppingRQ/RS}, \texttt{OfferPriceRQ/RS}, \texttt{OrderCreateRQ/RS} ; éléments \texttt{Pax}, \texttt{PaxRefID}, \texttt{OrderItem}. IATA Publications, Montreal--Geneva. Guide payant, pas d'URL publique stable.
     \item \textbf{International Air Transport Association (IATA).} (2023). \textit{ONE Order} --- architecture et spécifications techniques. IATA Future Airline Distribution, Geneva.
     \item \textbf{Sabre Corporation.} (2024). \textit{Sabre APIs Developer Reference} (SOAP / REST). Sabre Dev Studio, Southlake, Texas. Endpoints Session / Token Create et Command (cryptique).
     \item \textbf{Amadeus IT Group.} (2023). \textit{Amadeus Web Services Integration Guide} --- Passive Segments \& PNR Management. Madrid.
@@ -53,14 +53,14 @@ Taxe IZ & Taxe de solidarité (dite « taxe Chirac ») figurant dans la ventilat
 
 \section*{Documentation d'exécution et retours d'expérience}
 \begin{enumerate}[label={[T-\arabic*]},leftmargin=*,itemsep=5pt]
-    \item \textbf{Sequelize.} \textit{Transactions} (isolation levels, locks). Documentation v6. \url{https://sequelize.org/docs/v6/other-topics/transactions/}
-    \item \textbf{Sequelize.} Issue \#8294 --- \textit{How to correctly retry transactions} (deadlocks MySQL / \texttt{SequelizeDatabaseError}, \texttt{retry.match: [/Deadlock/i]}). \url{https://github.com/sequelize/sequelize/issues/8294}
-    \item \textbf{Loon, T.} (2021). \textit{How to Handle Database Deadlock in Sequelize}. JavaScript in Plain English. \url{https://javascript.plainenglish.io/how-to-handle-database-deadlock-in-sequelize-6bee46e9ed99}
+    \item \textbf{Sequelize.} \textit{Transactions} (niveaux d'isolation, verrous). Documentation v6. \url{https://sequelize.org/docs/v6/other-topics/transactions/} (consulté en 2026).
+    \item \textbf{Sequelize.} Issue \#8294 --- \textit{How to correctly retry transactions} (deadlocks MySQL, \texttt{retry.match: [/Deadlock/i]}). Issue fermée, fil conservé. \url{https://github.com/sequelize/sequelize/issues/8294}
+    \item \textbf{Loon, T.} (2021). \textit{How to Handle Database Deadlock in Sequelize}. JavaScript in Plain English. \url{https://javascript.plainenglish.io/how-to-handle-database-deadlock-in-sequelize-6bee46e9ed99} (consulté en 2026 ; copie aussi sur \url{https://plainenglish.io/javascript/how-to-handle-database-deadlock-in-sequelize}).
     \item \textbf{Oracle MySQL.} \textit{InnoDB Locking and Transaction Model} --- deadlocks et \texttt{SELECT ... FOR UPDATE}. MySQL 8.0 Reference Manual. \url{https://dev.mysql.com/doc/refman/8.0/en/innodb-locking.html}
     \item \textbf{Axios.} Interceptors --- documentation officielle (file d'attente / retry sur 401). \url{https://axios-http.com/docs/interceptors}
     \item \textbf{date-fns.} \texttt{date-fns-tz} --- parsing de dates sans offset et association fuseau IANA. \url{https://github.com/marnusw/date-fns-tz}
     \item \textbf{Vue.js / Pinia.} Documentation Composition API et stores typés. \url{https://pinia.vuejs.org/} ; \url{https://vuejs.org/guide/introduction.html}
-    \item \textbf{Nuxt.} Documentation Nuxt~3 (routing, SSR hybride). \url{https://nuxt.com/docs}
+    \item \textbf{Nuxt.} Documentation Nuxt~3 (installation, routing). \url{https://nuxt.com/docs/3.x/getting-started/installation} (consulté en 2026).
 \end{enumerate}
 
 \section*{Ouvrage de référence (patron Adaptateur)}

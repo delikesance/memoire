@@ -3,14 +3,12 @@
 
 \section{Bilan}
 
-Les adaptateurs, l'intercepteur OAuth2, l'appairage des passagers et la retarification tournent chez les agences suivies. \texttt{rawCarrierMetadata} est toujours là. La table d'exceptions ERP aussi. Quand le transporteur ne renvoie plus d'offre après un 409, le parcours reste médiocre.
-
-J'ai passé beaucoup plus de temps que prévu sur la taxe IZ, les fuseaux Aegean/Turkish et le deadlock InnoDB. Depuis, je prépare plus souvent une repro avant de modifier un contrôleur, et je pose la question au PO quand une règle métier est floue.
+Les adaptateurs, l'intercepteur OAuth2, l'appairage des passagers et la retarification sont en production sur le parc d'agences que nous suivons. Cela ne clôt pas le sujet : \texttt{rawCarrierMetadata} reste un champ fourre-tout, la table d'exceptions ERP doit encore être tenue à jour à la main, et le parcours après un 409 sans nouvelle offre est toujours médiocre. J'ai aussi passé plus de temps que prévu sur trois incidents (taxe IZ, fuseaux Aegean/Turkish, deadlock InnoDB). Depuis, je prépare plus souvent une reproduction avant de modifier un contrôleur, et je pose la question au PO lorsqu'une règle métier est floue.
 
 \section{RNCP 36137}
 
-Pour le titre d'\textbf{Expert en Ingénierie Informatique}, ce projet m'a mis devant une architecture multi-services, du full-stack Node.js / Nuxt, des contraintes ADM, des tests automatisés et une équipe Paris / Tunisie. Je n'ai pas déroulé le référentiel point par point ; ce sont les sujets que j'ai réellement traités.
+Pour le titre d'\textbf{Expert en Ingénierie Informatique}, ce projet m'a confronté à une architecture multi-services, au full-stack Node.js / Nuxt, aux contraintes ADM, aux tests automatisés et au travail avec une équipe répartie Paris / Tunisie. Je n'ai pas déroulé le référentiel point par point ; ce sont simplement les sujets que j'ai réellement traités.
 
 \section{Perspectives}
 
-Deux sujets à suivre : \textbf{IATA ONE Order} et \textbf{OpenTelemetry} sur les appels transporteurs.
+Deux sujets que je suivrais en priorité : la veille \textbf{IATA ONE Order}, qui pourrait simplifier le modèle de commande, et un traçage \textbf{OpenTelemetry} des appels transporteurs, aujourd'hui surtout diagnostiqués via Winston et Sentry.

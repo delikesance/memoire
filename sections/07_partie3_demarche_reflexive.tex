@@ -12,25 +12,25 @@
 
 \subsection{Homonymes}
 
-Sur un dossier familial, père et fils \texttt{DUPONT/JEAN} ont reçu tous les bagages sur le premier passager. L'appairage s'appuyait sur la clé textuelle normalisée. La compagnie a rejeté à l'émission. On a ajouté l'index de position (\texttt{travelerIndex}) et un warning UI, mais le cas reste fragile si l'ordre de saisie change.
+Le support a remonté un dossier famille où deux voyageurs portaient le même nom IATA (\texttt{DUPONT/JEAN}). L'appairage s'appuyait alors uniquement sur la clé textuelle normalisée, donc tous les bagages partaient sur le premier passager et la compagnie rejetait à l'émission. Nous avons ajouté l'index de position issu du store (\texttt{travelerIndex}) et un avertissement à l'écran. Ça couvre le ticket ; ça reste fragile si quelqu'un réordonne les passagers après coup.
 
 \subsection{Segments passifs vs ERP agences}
 
-Le découplage POS en base a éliminé les ADM pour double écriture Sabre/Amadeus sur plus de deux ans. Côté agences, Gestour, IEnterprise et TravelCloud ont des imports très rigides : certains refusent le PNR passif si la ligne comptable ne colle pas à leur convention, ou si la devise ne matche pas leur passerelle.
+Le découplage POS en base a, sur plus de deux ans, éliminé les ADM pour double écriture Sabre/Amadeus --- du moins ceux que nous avons pu relier à ce mécanisme. Côté agences, Gestour, IEnterprise et TravelCloud importent selon des conventions très rigides. Certains refusent le PNR passif si la ligne comptable ne colle pas, ou si la devise ne matche pas leur passerelle. Ce n'est pas un bug Metis au sens strict ; c'est un écart de contrat entre ce que le GDS accepte d'écrire et ce que l'ERP veut lire.
 
-Nous avons ajouté une table d'exceptions / règles par agence en PostgreSQL. Les comptables peuvent importer ; l'équipe doit mettre à jour la table quand un ERP change de format.
+Nous avons ajouté une table d'exceptions / règles par agence en PostgreSQL. Les comptables peuvent importer. En pratique, quelqu'un de l'équipe doit encore mettre à jour la table quand un ERP change de format, ce qui n'est ni élégant ni scalable.
 
 \subsection{\texttt{CanonicalFlightOffer} et les Branded Fares}
 
-L'idée du modèle pivot était de transformer n'importe quel SOAP Sabre ou JSON NDC en une structure commune. Pour environ 90\,\% des vols simples (aller-retour économique), ça tient. Dès Turkish Airlines ou Lufthansa Group et leurs \textit{Branded Fares}, les offres collent au billet des services non dissociables (bagage 23\,kg sur le premier tronçon seulement, sièges limités, conditions d'annulation hybrides).
+L'idée du modèle pivot était de transformer n'importe quel SOAP Sabre ou JSON NDC en une structure commune. Pour environ 90\,\% des vols simples (aller-retour économique), ça tient. Dès Turkish Airlines ou Lufthansa Group et leurs \textit{Branded Fares}, les offres collent au billet des services non dissociables --- bagage 23\,kg sur le premier tronçon seulement, sièges limités, conditions d'annulation hybrides --- et le typage commence à mentir.
 
-Étendre l'interface TypeScript à chaque particularité alourdissait le modèle. Le champ \texttt{rawCarrierMetadata: Record<string, any>} a servi d'échappatoire pour afficher ces spécificités sans casser le typage du reste.
+Étendre l'interface TypeScript à chaque particularité alourdissait le modèle plus vite qu'on ne savait le maintenir. Le champ \texttt{rawCarrierMetadata: Record<string, any>} a servi d'échappatoire pour afficher ces spécificités sans casser le reste. Je n'ai pas de plan propre pour le retirer.
 
 \subsection{Le 409 ne sauve pas tous les paniers}
 
-L'interception HTTP 409 avec \texttt{PriceChangeConfirmDialog.vue} couvre surtout les écarts de taxes modestes ou le basculement sur la sous-classe immédiatement supérieure. Quand le vol est fermé ou que le saut dépasse le plafond de politique de voyage, l'utilisateur refuse et relance une recherche.
+L'interception HTTP 409 avec \texttt{PriceChangeConfirmDialog.vue} couvre surtout les écarts de taxes modestes ou le basculement sur la sous-classe immédiatement supérieure. Quand le vol est fermé, ou que le saut dépasse le plafond de politique de voyage, l'utilisateur refuse et relance une recherche. Dans ces cas-là, la modale n'est qu'un message d'échec un peu plus lisible.
 
-En test, après un refus, Pinia gardait parfois les identifiants de l'ancienne offre. \texttt{useBookingStore().\$reset()} à la fermeture de modale a coupé ce cas.
+En test, après un refus, Pinia gardait parfois les identifiants de l'ancienne offre. \texttt{useBookingStore().\$reset()} à la fermeture de modale a coupé ce cas ; je n'ai pas revérifié tous les chemins de navigation autour.
 
 \chapter{Incidents de production et choix d'architecture}
 \label{chap:bilan_critique_technique}
@@ -113,9 +113,9 @@ export function setupAuthInterceptor(apiClient: AxiosInstance, authService: any)
 
 \subsection{Écart de centime sur la taxe IZ (taxe Chirac)}
 
-Le symptôme était net : \texttt{ERR\_PRICE\_MISMATCH} sur l'API NDC Air France, réservations Paris -- New York facturées en USD. Les logs Winston montraient 0,01\,USD d'écart entre le total commande et la somme des taxes ventilées (FR, IZ, QW).
+Le symptôme était un \texttt{ERR\_PRICE\_MISMATCH} sur l'API NDC Air France, réservations Paris -- New York facturées en USD. Winston montrait 0,01\,USD d'écart entre le total commande et la somme des taxes ventilées (FR, IZ, QW). Ce n'est pas un montant qui saute aux yeux en recette ; c'est le genre d'écart que le transporteur refuse quand même.
 
-On a d'abord suspecté la devise POS injectée dans \texttt{req.context.posCurrency}. Elle correspondait à celle d'Air France. L'écart venait de l'ordre des opérations : \texttt{Math.round} appliqué taxe par taxe après conversion donnait 124,51\,USD, alors que la conversion globale du total attendu valait 124,50\,USD. Nous avons basculé sur l'arrondi bancaire et ajouté une passe finale dans \texttt{pricingConsistency.utils.js} où la dernière composante de taxe absorbe le centime ($\text{Total} = \text{Base} + \sum \text{Taxes}$).
+On a d'abord regardé du côté de la devise POS injectée dans \texttt{req.context.posCurrency}, parce que d'autres tickets de conversion avaient déjà posé problème. La devise collait à celle d'Air France. L'écart venait de l'ordre des opérations : \texttt{Math.round} appliqué taxe par taxe après conversion donnait 124,51\,USD, alors que la conversion globale du total attendu valait 124,50\,USD. La taxe IZ, petite, absorbait souvent le centime de trop dans les logs, d'où le titre du ticket ; le vrai sujet était l'arrondi, pas la taxe Chirac en tant que telle. Nous avons basculé sur l'arrondi bancaire et ajouté une passe finale dans \texttt{pricingConsistency.utils.js} où la dernière composante de taxe absorbe le centime ($\text{Total} = \text{Base} + \sum \text{Taxes}$). Ça a calmé les rejets Air France sur ce motif, sans rien dire des autres compagnies qui ventilent autrement.
 
 Le listing \ref{lst:winston_ndc_mismatch} reproduit la trace capturée.
 
@@ -145,7 +145,7 @@ Le listing \ref{lst:winston_ndc_mismatch} reproduit la trace capturée.
 
 \subsection{Horaires Aegean / Turkish décalés de deux heures}
 
-Alertes agences sur des vols Athènes et Istanbul : selon que le poste client était à Paris ou à Londres, l'heure affichée bougeait. Les XML renvoyaient des dates ISO sans suffixe de fuseau (\texttt{"2024-06-15T18:30:00"}). \texttt{new Date()} côté Node les interprétait en UTC ; le navigateur réappliquait le fuseau local. Parsing via \texttt{date-fns-tz} et table aéroport IATA $\rightarrow$ fuseau IANA.
+Les alertes venaient des agences, pas d'un test interne : vols Athènes et Istanbul dont l'heure affichée changeait selon que le poste était à Paris ou à Londres. Les XML renvoyaient des dates ISO sans suffixe de fuseau (\texttt{"2024-06-15T18:30:00"}). \texttt{new Date()} côté Node les prenait en UTC ; le navigateur réappliquait le fuseau local. On a fini par parser avec \texttt{date-fns-tz} et une table aéroport IATA $\rightarrow$ fuseau IANA. Le décalage de deux heures n'était pas « le bug Aegean » : c'était le même parsing sur deux compagnies qui omettent l'offset.
 
 \subsection{Deadlock InnoDB sous Sequelize}
 
@@ -154,20 +154,22 @@ Pendant une campagne promo chez une agence partenaire, les réservations simulta
 Deadlock found when trying to get lock; try restarting transaction
 \end{verbatim}
 
-Augmenter \texttt{connectionLimit} n'a rien changé : les erreurs restaient sur les écritures de dossier, pas sur les lectures de recherche. Un retry avec \texttt{setTimeout} a fait baisser un peu le taux d'erreur sans supprimer la cause.
+J'ai d'abord augmenté \texttt{connectionLimit}, ce qui n'a rien fait : les erreurs restaient sur les écritures de dossier, pas sur les lectures de recherche. Un retry avec \texttt{setTimeout} a fait baisser un peu le taux d'erreur, assez pour que le support respire, pas assez pour que je considère le sujet clos.
 
-La repro est venue d'un script qui lançait plusieurs \texttt{OrderCreate} en parallèle sur le même POS. Les traces InnoDB montraient une inversion d'ordre : une transaction faisait \texttt{UPDATE PointDeVente} puis \texttt{INSERT Dossier}, l'autre l'inverse. Nous avons imposé le même ordre d'update dans Sequelize, passé l'isolation à \texttt{READ COMMITTED}, et posé un \texttt{SELECT ... FOR UPDATE} trié par clé primaire avant la mise à jour des compteurs. Les retries applicatifs sont restés en place comme filet.
+La repro n'est pas venue toute seule. Un script qui lançait plusieurs \texttt{OrderCreate} en parallèle sur le même POS a fini par la produire. Les traces InnoDB montraient deux chemins d'écriture qui ne prenaient pas les tables dans le même ordre --- une transaction faisait \texttt{UPDATE PointDeVente} puis \texttt{INSERT Dossier}, l'autre l'inverse. C'est ce que \texttt{SHOW ENGINE INNODB STATUS} a renvoyé ce jour-là, après un moment à regarder ailleurs.
+
+Nous avons imposé le même ordre d'update dans Sequelize, passé l'isolation à \texttt{READ COMMITTED}, et posé un \texttt{SELECT ... FOR UPDATE} trié par clé primaire avant la mise à jour des compteurs. Les retries applicatifs sont restés, parce que je n'étais pas convaincu d'avoir vu tous les chemins concurrents.
 
 \chapter{Travail en équipe et responsabilités en production}
 \label{chap:posture_professionnelle}
 
 \section{Organisation du développement}
 
-Les développements suivaient des sprints de deux semaines, avec daily et recettes PO. Sur les sujets sensibles (tarification, écritures passives, OAuth2), les merge requests passaient par une revue systématique sur GitLab ou GitHub. Plusieurs refontes (retarification, unification partielle GDS/NDC) ont nécessité une phase de cartographie des flux avant le codage, faute de quoi les correctifs locaux dans les contrôleurs se cumulaient.
+Les développements suivaient des sprints de deux semaines, avec daily et recettes PO. Sur les sujets sensibles --- tarification, écritures passives, OAuth2 --- les merge requests passaient par une revue systématique sur GitLab ou GitHub. Ce n'était pas le cas de tout le reste : j'ai aussi fusionné des correctifs UI sans grande discussion quand le support attendait. Plusieurs refontes (retarification, unification partielle GDS/NDC) ont nécessité une phase de cartographie des flux avant le codage, faute de quoi les correctifs locaux dans les contrôleurs se cumulaient.
 
 \section{Collaboration Paris / Tunisie}
 
-L'équipe de développement est répartie entre Paris et la Tunisie. Les décisions techniques sont documentées (wiki, commentaires de revue). L'exemple des fuseaux horaires illustre le besoin : un parsing via le constructeur natif \texttt{Date} décalait les horaires sur les postes français ; le correctif commun a consisté à introduire \texttt{date-fns-tz} et une table aéroport $\rightarrow$ fuseau IANA, puis à en faire une règle de revue.
+L'équipe de développement est répartie entre Paris et la Tunisie. Les décisions techniques sont documentées (wiki, commentaires de revue), mais le décalage horaire fait que certaines discussions se terminent en commentaires de MR plutôt qu'en visio. Après l'incident des fuseaux, on a ajouté une règle de revue : pas de \texttt{new Date()} sur une chaîne ISO sans offset. Ça n'empêche pas d'oublier ailleurs.
 
 \section{Estimations}
 

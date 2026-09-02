@@ -3,16 +3,12 @@
 
 \section{Contexte}
 
-J'ai effectué mon alternance chez Everbloo d'octobre 2023 à novembre 2026, principalement sur Metis. La plateforme sert des réseaux d'agences (TourCom) et des comptes entreprises. Pour afficher une offre, elle interroge Sabre, Amadeus et plusieurs connecteurs NDC (Air France-KLM, British Airways, Lufthansa Group, selon les contrats).
-
-Sabre et Amadeus s'appuient encore beaucoup sur des sessions avec état (EDIFACT, SOAP, cryptique). NDC expose des API web avec des \texttt{OfferID} qui expirent. Les résultats se retrouvent dans le même panier, ce qui crée des problèmes de cohérence de prix et de dossiers passagers.
+J'ai effectué mon alternance chez Everbloo d'octobre 2023 à novembre 2026, principalement sur Metis. La plateforme sert des réseaux d'agences --- TourCom en particulier --- et des comptes entreprises. Pour afficher une offre, elle interroge Sabre, Amadeus et plusieurs connecteurs NDC (Air France-KLM, British Airways, Lufthansa Group, selon les contrats du moment). Dans la pratique, ces sources ne se comportent pas de la même façon : Sabre et Amadeus s'appuient encore beaucoup sur des sessions avec état (EDIFACT, SOAP, parfois du cryptique), alors que NDC expose des API web dont les offres, identifiées par un \texttt{OfferID}, expirent au bout de quelques minutes. Les résultats se retrouvent pourtant dans le même panier, et c'est de là que viennent la plupart des problèmes de cohérence de prix et de dossiers passagers que j'ai eu à traiter.
 
 \section{Problématique}
 
-Le tarif de la recherche n'est pas toujours disponible à l'émission. Les noms doivent passer les contrôles IATA. Un bébé sans siège doit être rattaché à un adulte. Les devises suivent ISO 4217. Une écriture passive incorrecte peut déclencher un ADM.
-
-La question est écrite en page de garde. Stack utilisée : Node.js / Sequelize, Nuxt~3 / Vue~3 / TypeScript.
+Le tarif vu à la recherche n'est pas toujours celui qui reste disponible à l'émission. Les noms doivent passer les contrôles IATA ; un bébé sans siège doit être rattaché à un adulte ; les devises suivent ISO 4217 ; une écriture passive incorrecte dans le GDS de l'agence peut déclencher un ADM. La question posée en page de garde recouvre ce périmètre. Côté implémentation, l'essentiel tourne autour d'une API Node.js (Sequelize) et d'interfaces Nuxt~3 / Vue~3 en TypeScript.
 
 \section{Organisation}
 
-Entreprise et stack, réalisations, limites, RNCP. Pas strictement chronologique.
+Le document présente d'abord l'entreprise et la stack, puis les réalisations, les limites observées en production et le lien avec le RNCP. L'ordre n'est pas strictement chronologique.
