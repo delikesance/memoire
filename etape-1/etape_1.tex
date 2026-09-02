@@ -1,0 +1,82 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usepackage{lmodern}
+\usepackage{geometry}
+\geometry{a4paper, top=25mm, bottom=25mm, left=25mm, right=25mm}
+\usepackage{xcolor}
+\definecolor{NavyBlue}{HTML}{0A2540}
+\definecolor{CobaltBlue}{HTML}{0055B3}
+\definecolor{DarkSlate}{HTML}{2D3748}
+\definecolor{LightGray}{HTML}{F7FAFC}
+\usepackage{tcolorbox}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true, linkcolor=CobaltBlue, urlcolor=CobaltBlue}
+
+\title{\vspace{-1cm}\Huge\textbf{\textcolor{NavyBlue}{Mémoire PRO-ENT5 — Étape 1}}\\[6pt]
+\Large\textbf{\textcolor{CobaltBlue}{Entreprise, Poste, Sujet et Problématique}}}
+\author{\textbf{Jérémy SOLER} — Apprenti Architecte Systèmes d'Information\\
+SAS Everbloo / Metis Digital — ETNA (Titre d'Expert en Ingénierie Informatique)}
+\date{Année académique 2025 -- 2026}
+
+\begin{document}
+\maketitle
+
+\vspace{0.2cm}
+
+\section*{Partie A — Contexte Entreprise et Poste Occupé}
+
+\subsection*{1. Secteur d'Activité et Positionnement de SAS Everbloo}
+\textbf{SAS Everbloo} est une société d'ingénierie logicielle et de conseil en technologies du voyage (TravelTech), fondée et dirigée par Reouven SAMAMA. Établie à Paris (75011), l'entreprise développe des solutions logicielles sur mesure pour les acteurs du tourisme et du voyage d'affaires. Elle est le partenaire technique de référence du réseau \textbf{TourCom} (plus de 1\,200 agences de voyages indépendantes en France).
+
+\subsection*{2. Périmètre du Projet Metis Digital}
+Le projet central de mon alternance est la plateforme \textbf{Metis} (\textit{Metis Digital}), conçue en collaboration avec Jérôme BENBIHI (CEO), Bernard MOLLE (Président, expert GDS) et David MARCIANO (COO). Metis est un moteur de distribution aérienne B2B et un outil d'auto-réservation d'entreprise (\textit{Self-Booking Tool} -- SBT) qui équipe aujourd'hui près de cent agences de voyages.
+
+\subsection*{3. Rôle Réel, Responsabilités et Évolution du Poste}
+Entré en tant que développeur full-stack en octobre 2023, mon rôle a évolué vers celui d'\textbf{Apprenti Architecte Systèmes d'Information} au sein d'une équipe distribuée (France et Tunisie). Mes responsabilités couvrent :
+\begin{itemize}[itemsep=2pt]
+    \item La conception des couches d'abstraction et des modèles de données pivots pour agréger les flux GDS et NDC ;
+    \item Le développement full-stack sur 4 dépôts (\texttt{api-aerial}, \texttt{front-reservation}, \texttt{front-dashboard}, \texttt{api-dashboard}) totalisant 1\,554 commits et plus de 192\,000 lignes nettes de code maintenues ;
+    \item L'encadrement technique, les revues de code et la résolution des incidents de production en direct.
+\end{itemize}
+
+\subsection*{4. Technologies et Méthodes de Travail}
+\begin{itemize}[itemsep=2pt]
+    \item \textbf{Stack Backend :} Node.js, Express.js, ORM Sequelize, bases MySQL / PostgreSQL, Keycloak, Swagger/OpenAPI.
+    \item \textbf{Stack Frontend :} Nuxt 3, Vue 3 (Composition API), TypeScript strict, Pinia, Vuetify 3, Vite.
+    \item \textbf{Méthodologie :} Sprints agiles de 2 semaines, backlog Jira, revues de code GitLab/GitHub, outillage local hermétique avec Devenv (Nix) et Pixi.
+\end{itemize}
+
+\vspace{0.4cm}
+\section*{Partie B — Sujet, Problématique et Missions Liées}
+
+\subsection*{1. Rappel de la Problématique Stabilisée}
+\begin{tcolorbox}[colback=LightGray, colframe=NavyBlue, arc=4pt, boxrule=1.2pt]
+\centering\large\itshape\color{NavyBlue}
+«~Comment garantir la cohérence transactionnelle et tarifaire d'un moteur de réservation aérien agrégeant des protocoles hybrides (GDS et NDC) ?~»
+\end{tcolorbox}
+
+\subsection*{2. Justification du Choix du Sujet}
+Le transport aérien est scindé entre deux architectures incompatibles : les GDS historiques (Sabre, Amadeus) basés sur des sessions synchrones d'état (EDIFACT/SOAP) avec inventaire verrouillé, et la norme IATA NDC basée sur des API REST/XML sans état délivrant des offres éphémères (\texttt{OfferID}). Entre la recherche et le paiement, les variations de prix imposées par le \textit{Revenue Management} et les erreurs de mapping passagers provoquent des blocages de commande et des pénalités financières (ADM).
+
+\subsection*{3. Missions en Lien Direct avec la Problématique}
+\begin{itemize}[itemsep=3pt]
+    \item \textbf{Mission 1 — Normalisation GDS/NDC via le patron Adaptateur :} Création de \texttt{SabreAdapter.ts} pour traduire les flux hétérogènes en un modèle pivot TypeScript unique (\texttt{CanonicalFlightOffer}).
+    \item \textbf{Mission 2 — Moteur réactif de retarification (Reshopping) :} Interception des variations tarifaires avant paiement (HTTP 409) et reprise interactive sans réinitialiser la saisie des voyageurs (\texttt{PriceChangeConfirmDialog.vue}).
+    \item \textbf{Mission 3 — Réconciliation déterministe des passagers (\texttt{matchesPaxRefId}) :} Traitement des cas limites IATA (nourrissons sans siège rattachés à un adulte, noms composés, nettoyage d'ancillaries orphelins).
+    \item \textbf{Mission 4 — Architecture multi-devises asynchrone et segments passifs :} Middleware de résolution de devise avec cache LRU et isolation en base des règles Amadeus/Sabre pour éliminer les doublons.
+\end{itemize}
+
+\subsection*{4. Premiers Résultats Factuels Observés en Production}
+\begin{itemize}[itemsep=2pt]
+    \item Taux d'échec de création d'ordre NDC réduit de 8,4\,\% à moins de 0,1\,\% ;
+    \item 92\,\% des paniers confrontés à un réajustement tarifaire finalisés avec succès grâce au reshopping ;
+    \item Zéro avis de débit (ADM) pour duplication d'écriture passive sur plus de 2 ans d'exploitation ;
+    \item Temps de réponse de recherche optimisé de 28\,\% (de 4,2\,s à 3,0\,s sur un benchmark de 10\,000 requêtes).
+\end{itemize}
+
+\end{document}

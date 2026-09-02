@@ -1,30 +1,53 @@
 \chapter*{Table des sigles et abréviations}
 \addcontentsline{toc}{chapter}{Table des sigles et abréviations}
 
-\begin{description}[leftmargin=3.2cm,style=nextline,itemsep=5pt]
-    \item[\textbf{API}] \textit{Application Programming Interface} — Interface de programmation permettant l'échange standardisé de données entre applications.
-    \item[\textbf{B2B}] \textit{Business to Business} — Relations commerciales et flux d'échange établis entre professionnels et entreprises.
-    \item[\textbf{CI/CD}] \textit{Continuous Integration / Deployment} — Pratiques d'automatisation des tests, de la construction et de la livraison logicielle.
-    \item[\textbf{CSR}] \textit{Client-Side Rendering} — Mode de rendu d'une application web exécuté directement au sein du navigateur client.
-    \item[\textbf{DOM}] \textit{Document Object Model} — Représentation arborescente et programmable de la structure d'une page web.
-    \item[\textbf{EDIFACT}] \textit{Electronic Data Interchange for Administration, Commerce and Transport} — Standard international de données transactionnelles textuelles utilisé par les GDS historiques.
-    \item[\textbf{EMD}] \textit{Electronic Miscellaneous Document} — Document électronique émis par une compagnie aérienne pour matérialiser les services auxiliaires payants (bagages, sièges).
-    \item[\textbf{GDS}] \textit{Global Distribution System} — Système informatique mondial centralisé (Sabre, Amadeus, Travelport) agrégeant l'inventaire et les tarifs des transporteurs aériens.
-    \item[\textbf{IATA}] \textit{International Air Transport Association} — Organisation professionnelle mondiale régissant les standards techniques, commerciaux et juridiques de l'aviation civile.
-    \item[\textbf{ISO 4217}] \textit{International Standard for Currency Codes} — Norme internationale définissant les codes à trois lettres (ex: EUR, USD) et les règles de précision monétaire des devises.
-    \item[\textbf{JSON}] \textit{JavaScript Object Notation} — Format d'échange de données textuel, léger, lisible et structuré sous forme de paires clé-valeur.
-    \item[\textbf{LCC}] \textit{Low-Cost Carrier} — Compagnie aérienne à bas coûts opérant généralement hors des circuits traditionnels GDS via des API propriétaires.
-    \item[\textbf{MVCS}] \textit{Model-View-Controller-Service} — Patron d'architecture logicielle isolant la persistance, l'orchestration, le routage et la logique métier.
-    \item[\textbf{NDC}] \textit{New Distribution Capability} — Standard XML/JSON promulgué par l'IATA permettant la distribution directe et la personnalisation d'offres aériennes.
-    \item[\textbf{OCN}] \textit{Order Change Notification} — Message asynchrone émis par une compagnie ou un GDS notifiant une modification d'horaire, d'itinéraire ou de statut de vol.
-    \item[\textbf{ORM}] \textit{Object-Relational Mapping} — Couche logicielle faisant le pont entre un modèle de données relationnel (SQL) et des objets applicatifs.
-    \item[\textbf{PNR}] \textit{Passenger Name Record} — Dossier informatique d'un voyageur (code à 6 caractères alphanumériques) regroupant vols, passagers, tarifs et émissions.
-    \item[\textbf{POS}] \textit{Point of Sale} — Point de vente ou identifiant commercial d'une agence définissant sa localisation, ses devises et ses accès GDS.
-    \item[\textbf{REST}] \textit{Representational State Transfer} — Style d'architecture logicielle définissant un ensemble de contraintes pour la création de services web légers via HTTP.
-    \item[\textbf{SBT}] \textit{Self-Booking Tool} — Outil de réservation en ligne permettant aux collaborateurs d'entreprises de réserver leurs déplacements professionnels.
-    \item[\textbf{SOA}] \textit{Service-Oriented Architecture} — Architecture logicielle articulée autour de services découplés communicant via des protocoles réseau stricts.
-    \item[\textbf{SOAP}] \textit{Simple Object Access Protocol} — Protocole de communication réseau basé sur XML pour l'échange de messages structurés dans les services web.
-    \item[\textbf{SSR}] \textit{Server-Side Rendering / Special Service Request} — (1) Rendu côté serveur en Nuxt 3 ; (2) Code IATA formalisant une demande de service auxiliaire passager.
-    \item[\textbf{UI / UX}] \textit{User Interface / User Experience} — Conception de l'interface utilisateur et optimisation de l'expérience d'utilisation globale.
-    \item[\textbf{XML}] \textit{Extensible Markup Language} — Langage de balisage générique utilisé pour la structuration et l'échange de documents hiérarchisés.
-\end{description}
+\vspace{0.2cm}
+Ce tableau récapitule les principaux sigles, abréviations et termes techniques utilisés dans l'ingénierie de la plateforme Metis et l'écosystème de la distribution aérienne.
+
+\vspace{0.4cm}
+{\small
+\renewcommand{\arraystretch}{1.3}
+\arrayrulecolor{CobaltBlue!25}
+\begin{longtable}{>{\columncolor{CobaltBlue!5}\bfseries\color{NavyBlue}}p{2.6cm} p{12.2cm}}
+\hline
+\rowcolor{CobaltBlue!12}
+\textbf{\color{NavyBlue}Sigle / Terme} & \textbf{\color{NavyBlue}Définition et Contexte Métier} \\
+\hline
+\endfirsthead
+
+\hline
+\rowcolor{CobaltBlue!12}
+\textbf{\color{NavyBlue}Sigle / Terme} & \textbf{\color{NavyBlue}Définition et Contexte Métier (suite)} \\
+\hline
+\endhead
+
+\hline
+\endfoot
+
+API & \textit{Application Programming Interface} — Interface standardisée d'échange de données. \\
+B2B & \textit{Business to Business} — Flux commerciaux et logiciels entre entreprises. \\
+CI/CD & \textit{Continuous Integration / Deployment} — Pipeline d'automatisation des tests et livraisons. \\
+CSR & \textit{Client-Side Rendering} — Rendu dynamique exécuté dans le navigateur du client. \\
+DOM & \textit{Document Object Model} — Représentation objet de la page web. \\
+EDIFACT & \textit{Electronic Data Interchange for Administration, Commerce and Transport} — Standard d'échange des GDS historiques. \\
+EMD & \textit{Electronic Miscellaneous Document} — Titre électronique pour les services auxiliaires payants. \\
+GDS & \textit{Global Distribution System} — Réseau mondial centralisé de distribution (Sabre, Amadeus). \\
+IATA & \textit{International Air Transport Association} — Organisation régissant les normes de l'aviation civile. \\
+ISO 4217 & Standard international de codification et précision monétaire des devises. \\
+JSON & \textit{JavaScript Object Notation} — Format textuel léger d'échange de données. \\
+LCC & \textit{Low-Cost Carrier} — Compagnie aérienne à bas coûts. \\
+MVCS & \textit{Model-View-Controller-Service} — Patron d'architecture isolant le métier et la persistance. \\
+NDC & \textit{New Distribution Capability} — Standard IATA XML/JSON de distribution aérienne directe. \\
+OCN & \textit{Order Change Notification} — Notification asynchrone de modification de commande ou vol. \\
+ORM & \textit{Object-Relational Mapping} — Couche d'abstraction entre base SQL et code applicatif. \\
+PNR & \textit{Passenger Name Record} — Dossier passager informatique (identifiant à 6 caractères). \\
+POS & \textit{Point of Sale} — Point de vente définissant la localisation et les droits marchands. \\
+REST & \textit{Representational State Transfer} — Style d'architecture pour services web légers. \\
+SBT & \textit{Self-Booking Tool} — Outil de réservation en ligne pour les voyages d'affaires. \\
+SOA & \textit{Service-Oriented Architecture} — Architecture orientée services découplés. \\
+SOAP & \textit{Simple Object Access Protocol} — Protocole XML d'échanges de services web. \\
+SSR & \textit{Server-Side Rendering / Special Service Request} — Rendu serveur ou service spécial passager. \\
+UI / UX & \textit{User Interface / User Experience} — Conception et ergonomie de l'interface utilisateur. \\
+XML & \textit{Extensible Markup Language} — Langage de balisage structuré pour l'échange de documents. \\
+\end{longtable}
+}

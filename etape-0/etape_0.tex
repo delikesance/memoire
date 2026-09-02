@@ -1,0 +1,86 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usepackage{lmodern}
+\usepackage{geometry}
+\geometry{a4paper, top=25mm, bottom=25mm, left=25mm, right=25mm}
+\usepackage{xcolor}
+\definecolor{NavyBlue}{HTML}{0A2540}
+\definecolor{CobaltBlue}{HTML}{0055B3}
+\definecolor{DarkSlate}{HTML}{2D3748}
+\definecolor{LightGray}{HTML}{F7FAFC}
+\usepackage{tcolorbox}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true, linkcolor=CobaltBlue, urlcolor=CobaltBlue}
+
+\title{\vspace{-1cm}\Huge\textbf{\textcolor{NavyBlue}{Mémoire PRO-ENT5 — Étape 0}}\\[6pt]
+\Large\textbf{\textcolor{CobaltBlue}{Problématique et Plan de Travail}}}
+\author{\textbf{Jérémy SOLER} — Apprenti Architecte Systèmes d'Information\\
+SAS Everbloo / Metis Digital — ETNA (Titre d'Expert en Ingénierie Informatique)}
+\date{Année académique 2025 -- 2026}
+
+\begin{document}
+\maketitle
+
+\vspace{0.2cm}
+
+\section{Résumé de l'Entreprise d'Accueil (5 lignes max)}
+\textbf{SAS Everbloo} est une société d'ingénierie logicielle parisienne (75011) dirigée par Reouven SAMAMA, spécialisée dans l'édition de solutions numériques et d'outils B2B pour le tourisme et les déplacements professionnels (TravelTech). Partenaire technologique du réseau d'agences indépendantes TourCom, Everbloo conçoit et maintient des plateformes à haute intensité transactionnelle connectées aux infrastructures mondiales de distribution de voyages.
+
+\section{Résumé des Projets et Missions Retenus (5 lignes max par projet)}
+\noindent\textbf{1. Plateforme Metis — Moteur de Distribution Hybride GDS / NDC :}\\
+Conception et développement full-stack d'un moteur de distribution aérienne B2B agrégeant les inventaires synchrones des GDS historiques (Sabre, Amadeus) et les flux asynchrones directs de la norme IATA NDC (Air France, British Airways, etc.) pour près de 100 agences de voyages.
+
+\vspace{0.2cm}
+\noindent\textbf{2. Module de Retarification Réactive et Réconciliation Passagers :}\\
+Développement d'un flux interactif de reprise sur variation tarifaire (\textit{reshopping} HTTP 409) et d'un algorithme déterministe d'appairage passager-services (\texttt{matchesPaxRefId}) garantissant l'intégrité des données avant émission du billet.
+
+\section{Mots-Clés Identifiés}
+\begin{itemize}[itemsep=2pt]
+    \item \textbf{Techniques :} Node.js, Express, Nuxt 3, Vue 3, TypeScript, Pinia, Sequelize ORM, REST, SOAP, XML, OAuth2, Tests Mocha/Chai.
+    \item \textbf{Métier / Secteur :} Distribution Aérienne, GDS (Sabre, Amadeus), IATA NDC, PNR, Segments Passifs, Billetterie B2B, SBT.
+    \item \textbf{Organisationnels / Qualité :} Cohérence Transactionnelle, Retarification Temps Réel, Prévention ADM, Multi-Devises ISO 4217.
+\end{itemize}
+
+\section{Thématique Commune}
+\noindent\textit{L'unification architecturale et transactionnelle de protocoles hétérogènes (sessions d'état synchrones et API sans état) au sein d'un moteur de réservation aérien B2B.}
+
+\section{Problématique Finale}
+\begin{tcolorbox}[colback=LightGray, colframe=NavyBlue, arc=4pt, boxrule=1.2pt]
+\centering\large\itshape\color{NavyBlue}
+«~Comment garantir la cohérence transactionnelle et tarifaire d'un moteur de réservation aérien agrégeant des protocoles hybrides (GDS et NDC) ?~»
+\end{tcolorbox}
+
+\section{Plan Proposé pour le Mémoire}
+\begin{enumerate}[itemsep=3pt]
+    \item \textbf{Partie 1 : Contexte Professionnel et Écosystème Métier de l'Aérien}
+    \begin{itemize}[itemsep=1pt]
+        \item Chapitre 1 : Introduction Générale et Cadrage Stratégique
+        \item Chapitre 2 : Présentation de SAS Everbloo et Rôle d'Architecte SI
+        \item Chapitre 3 : Écosystème Technologique et Architecture de la Plateforme Metis
+        \item Chapitre 4 : Formulation et Contextualisation de la Problématique Centrale
+    \end{itemize}
+    \item \textbf{Partie 2 : Réalisations Techniques et Résolution de la Problématique}
+    \begin{itemize}[itemsep=1pt]
+        \item Chapitre 5 : Intégration Hybride GDS/NDC et Patron Adaptateur (\texttt{SabreAdapter.ts})
+        \item Chapitre 6 : Cycle Transactionnel et Moteur de Retarification Réactive (\textit{Reshopping})
+        \item Chapitre 7 : Optimisation du Moteur de Recherche et Filtrage Multi-Compagnies
+        \item Chapitre 8 : Architecture Financière et Traitement Asynchrone Multi-Devises
+        \item Chapitre 9 : Back-Office d'Administration et Gouvernance des Points de Vente
+        \item Chapitre 10 : Industrialisation, Tests Automatisés et Résultats Mesurés
+    \end{itemize}
+    \item \textbf{Partie 3 : Démarche Réflexive, Analyse Critique et Maturation Professionnelle}
+    \begin{itemize}[itemsep=1pt]
+        \item Chapitre 11 : Réponse Démonstrative à la Problématique et Validation des Hypothèses
+        \item Chapitre 12 : Analyse Critique, Galères de Production et Défis Techniques Réels (OAuth2, Taxes, Deadlocks)
+        \item Chapitre 13 : Maturation Humaine, Posture Professionnelle et Réalités du Terrain
+        \item Chapitre 14 : Conclusion Générale et Perspectives (IATA ONE Order, Observabilité)
+    \end{itemize}
+\end{enumerate}
+
+\section{Justification Concise du Choix de Problématique}
+Cette problématique est ouverte, directement issue des contraintes d'ingénierie réelles vécues sur la plateforme Metis, et permet une analyse critique approfondie. Elle dépasse la simple description pour explorer les compromis d'architecture distribuée entre sessions d'état héritées et flux sans état modernes.
+
+\end{document}

@@ -1,0 +1,82 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usepackage{lmodern}
+\usepackage{geometry}
+\geometry{a4paper, top=24mm, bottom=24mm, left=24mm, right=24mm}
+\usepackage{xcolor}
+\definecolor{NavyBlue}{HTML}{0A2540}
+\definecolor{CobaltBlue}{HTML}{0055B3}
+\definecolor{DarkSlate}{HTML}{2D3748}
+\definecolor{LightGray}{HTML}{F7FAFC}
+\usepackage{tcolorbox}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true, linkcolor=CobaltBlue, urlcolor=CobaltBlue}
+
+\title{\vspace{-1cm}\Huge\textbf{\textcolor{NavyBlue}{Mémoire PRO-ENT5 — Étape 2}}\\[6pt]
+\Large\textbf{\textcolor{CobaltBlue}{Missions et Projets en Lien avec la Problématique}}}
+\author{\textbf{Jérémy SOLER} — Apprenti Architecte Systèmes d'Information\\
+SAS Everbloo / Metis Digital — ETNA (Titre d'Expert en Ingénierie Informatique)}
+\date{Année académique 2025 -- 2026}
+
+\begin{document}
+\maketitle
+
+\vspace{0.2cm}
+\begin{tcolorbox}[colback=LightGray, colframe=NavyBlue, arc=4pt, boxrule=1.1pt]
+\centering\textbf{Rappel de la Problématique d'Ingénierie :}\\
+\textit{« Comment garantir la cohérence transactionnelle et tarifaire d'un moteur de réservation aérien agrégeant des protocoles hybrides (GDS et NDC) ? »}
+\end{tcolorbox}
+
+\section{Mission 1 — Couche d'Abstraction Canonique via le Patron Adaptateur}
+\begin{itemize}[itemsep=2pt]
+    \item \textbf{Contexte et Enjeu :} Disparité extrême entre les flux SOAP/Command de Sabre et les API REST/XML de transporteurs NDC (Air France, British Airways, Aegean). Sans abstraction, le code frontend et backend accumulait des conditions ad-hoc ingérables.
+    \item \textbf{Objectif Cible :} Unifier la représentation des offres de vol sous une interface pivot TypeScript unique (\texttt{CanonicalFlightOffer}) sans toucher aux composants graphiques lors de l'ajout d'une compagnie.
+    \item \textbf{Décisions Prises :} Implémentation du patron de conception Adaptateur (\texttt{SabreAdapter.ts}) pour normaliser segments, cabines, ventilation de taxes et services auxiliaires payants (\textit{ancillaries}).
+    \item \textbf{Méthodes et Outils :} Nuxt 3, Vue 3, TypeScript strict, stores Pinia.
+    \item \textbf{Résultats Chiffrés :} Intégration transparente de 3 nouveaux connecteurs NDC directs sans modifier les composants de panier ; zéro régression d'affichage sur les tarifs.
+    \item \textbf{Limites et Tensions :} Certains services atypiques (animaux en cabine, bagages hors format) nécessitent des extensions manuelles de l'adaptateur.
+    \item \textbf{Lien avec la Problématique :} Isole la couche métier des singularités protocolaires et stabilise le modèle du panier.
+\end{itemize}
+
+\section{Mission 2 — Moteur Réactif de Retarification Temps Réel (Reshopping)}
+\begin{itemize}[itemsep=2pt]
+    \item \textbf{Contexte et Enjeu :} Entre la sélection d'un vol et le paiement, les moteurs de \textit{Revenue Management} des compagnies peuvent augmenter les taxes ou fermer la classe tarifaire initiale.
+    \item \textbf{Objectif Cible :} Détecter automatiquement tout écart de prix avant l'émission ferme et permettre une confirmation interactive du nouveau tarif sans perte de saisie des passagers.
+    \item \textbf{Décisions Prises :} Interception de la réponse serveur HTTP 409 (\textit{Conflict}), calcul du delta de taxes ($\Delta P = P_1 - P_0$) et affichage de la modal \texttt{PriceChangeConfirmDialog.vue}. Reprise immédiate avec le nouvel \texttt{OfferID}.
+    \item \textbf{Méthodes et Outils :} Express.js, Pinia (\texttt{useBookingStore}), Vuetify 3.
+    \item \textbf{Résultats Chiffrés :} 92\,\% des paniers confrontés à une hausse de tarif en vol sont finalisés avec succès (contre 100\,\% d'abandons bloquants auparavant).
+    \item \textbf{Limites et Tensions :} Si la hausse est trop élevée (ex: saut de cabine de +400\,€), le client refuse l'offre et doit être réorienté vers la recherche sans latence.
+    \item \textbf{Lien avec la Problématique :} Garantit la cohérence tarifaire au centime près entre l'intention d'achat et le débit effectif.
+\end{itemize}
+
+\section{Mission 3 — Algorithme Déterministe de Réconciliation des Passagers}
+\begin{itemize}[itemsep=2pt]
+    \item \textbf{Contexte et Enjeu :} Les compagnies NDC rejettent immédiatement toute requête \texttt{jsonOrderCreateRQ} si les identifiants passagers (\texttt{PaxRefID}) sont mal appairés ou si des services orphelins subsistent.
+    \item \textbf{Objectif Cible :} Assurer un appairage déterministe respectant la norme IATA 21.3 pour tous types de passagers (adultes, enfants, nourrissons sans siège).
+    \item \textbf{Décisions Prises :} Conception de la fonction \texttt{matchesPaxRefId} dans \texttt{orderCreation.utils.ts} : nettoyage ASCII 7-bit des noms, rattachement explicite du bébé sans siège à un adulte via \texttt{associatedAdultRefId}, et purge des bagages/sièges orphelins.
+    \item \textbf{Méthodes et Outils :} Node.js, TypeScript, suites de tests unitaires Mocha / Chai (\texttt{orderCreation.utils.test.js}).
+    \item \textbf{Résultats Chiffrés :} Taux d'échec de commande NDC réduit de 8,4\,\% à moins de 0,1\,\% sur les flux en production.
+    \item \textbf{Limites et Tensions :} Des messages d'erreur non documentés renvoyés par certaines passerelles nécessitent une maintenance préventive des parseurs d'erreurs.
+    \item \textbf{Lien avec la Problématique :} Garantit la cohérence transactionnelle et la conformité contractuelle lors de l'émission.
+\end{itemize}
+
+\section{Mission 4 — Architecture Multi-Devises Asynchrone et Gestion des Segments Passifs}
+\begin{itemize}[itemsep=2pt]
+    \item \textbf{Contexte et Enjeu :} Les agences clientes de Metis (réseau TourCom) opèrent sous diverses devises de facturation et doivent inscrire des segments passifs dans leur GDS pour que leur back-office comptable facture le dossier.
+    \item \textbf{Objectif Cible :} Supprimer les blocages I/O sur la base de données et éliminer les doublons d'écritures passives entre Sabre et Amadeus (source de pénalités ADM).
+    \item \textbf{Décisions Prises :} Middleware asynchrone avec cache LRU pour la devise agence, calculs selon la norme ISO 4217 avec arrondi bancaire (\textit{banker's rounding}), et migration de base découpant strictement les options Sabre et Amadeus.
+    \item \textbf{Méthodes et Outils :} Sequelize ORM, Express middlewares, tests d'arrondis financiers sous Chai.
+    \item \textbf{Résultats Chiffrés :} Zéro litige ADM pour duplication d'écriture passive sur 2 ans ; élimination du goulot d'étranglement de requêtes SQL.
+    \item \textbf{Limites et Tensions :} Taux de change volatils nécessitant un rafraîchissement périodique des tables de devises.
+    \item \textbf{Lien avec la Problématique :} Assure l'intégrité comptable et financière des points de vente partenaires.
+\end{itemize}
+
+\section{Synthèse et Transition vers l'Analyse Critique}
+Ces quatre chantiers d'ingénierie apportent une solution cohérente aux frictions du modèle hybride. L'étape suivante consistera à analyser de manière critique les compromis d'architecture adoptés (OAuth2, verrous SQL, dette technique) et à tirer le bilan de cette démarche au regard de mon parcours professionnel.
+
+\end{document}

@@ -1,0 +1,85 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french,english]{babel}
+\usepackage{lmodern}
+\usepackage{geometry}
+\geometry{a4paper, top=24mm, bottom=24mm, left=24mm, right=24mm}
+\usepackage{xcolor}
+\definecolor{NavyBlue}{HTML}{0A2540}
+\definecolor{CobaltBlue}{HTML}{0055B3}
+\definecolor{DarkSlate}{HTML}{2D3748}
+\definecolor{LightGray}{HTML}{F7FAFC}
+\usepackage{tcolorbox}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true, linkcolor=CobaltBlue, urlcolor=CobaltBlue}
+
+\title{\vspace{-1cm}\Huge\textbf{\textcolor{NavyBlue}{Mémoire PRO-ENT5 — Étape 4}}\\[6pt]
+\Large\textbf{\textcolor{CobaltBlue}{Introduction, Conclusion et Abstracts (FR / EN)}}}
+\author{\textbf{Jérémy SOLER} — Apprenti Architecte Systèmes d'Information\\
+SAS Everbloo / Metis Digital — ETNA (Titre d'Expert en Ingénierie Informatique)}
+\date{Année académique 2025 -- 2026}
+
+\begin{document}
+\selectlanguage{french}
+\maketitle
+
+\vspace{0.2cm}
+
+\section*{Bloc 1 — Introduction Complète}
+L'industrie du transport aérien vit une mutation technologique sans précédent avec la transition progressive des systèmes de distribution globale historiques (GDS Sabre, Amadeus) vers la norme moderne \textbf{IATA NDC} (\textit{New Distribution Capability}).
+
+Cette hybridation soulève une contradiction technique majeure :
+\begin{itemize}[itemsep=2pt]
+    \item D'un côté, les GDS imposent des sessions avec état, synchrones et rigides (protocoles EDIFACT et SOAP XML), où l'inventaire est verrouillé temporairement.
+    \item De l'autre côté, les API NDC reposent sur des échanges REST/XML sans état, délivrant des offres éphémères soumises aux réajustements tarifaires instantanés du \textit{Revenue Management}.
+\end{itemize}
+
+Face à cette asymétrie, l'intégrateur de billetterie B2B se heurte à des ruptures de transactions, des erreurs de calculs multi-devises et des risques d'amendes financières (\textit{Debit Memos} -- ADM) en cas de duplication de segments passifs.
+
+C'est dans ce cadre que s'inscrit notre problématique centrale :
+\begin{tcolorbox}[colback=LightGray, colframe=NavyBlue, arc=4pt, boxrule=1.1pt]
+\centering\large\itshape\color{NavyBlue}
+«~Comment garantir la cohérence transactionnelle et tarifaire au sein d'un moteur de réservation de billets d'avion agrégeant des protocoles hybrides (GDS et NDC) ?~»
+\end{tcolorbox}
+
+\noindent\textbf{Annonce du plan d'ingénierie :}
+\begin{enumerate}[itemsep=2pt]
+    \item \textbf{Partie 1 :} Contexte d'accueil (SAS Everbloo, réseau TourCom), architecture de Metis et formulation des 4 hypothèses de travail.
+    \item \textbf{Partie 2 :} Réalisations logicielles (patron Adaptateur \texttt{SabreAdapter.ts}, moteur de retarification réactif \textit{reshopping} HTTP 409, algorithme déterministe \texttt{matchesPaxRefId}, pipeline multi-devises asynchrone).
+    \item \textbf{Partie 3 :} Bilan critique des hypothèses, analyse des incidents de production réels (OAuth2, erreurs d'arrondis de taxes, deadlocks SQL Sequelize), démarche réflexive et perspectives.
+\end{enumerate}
+
+\vspace{0.3cm}
+\section*{Bloc 2 — Conclusion Générale}
+Les travaux d'ingénierie logicielle menés sur la plateforme \textbf{Metis} au cours de mes 38 mois d'immersion chez SAS Everbloo démontrent la viabilité d'une architecture orientée services (SOA) découplée face aux défis de l'agrégation hybride.
+
+En couplant l'isolation protocolaire via des adaptateurs canoniques, le rafraîchissement silencieux des sessions OAuth2 avec file d'attente FIFO, l'appairage passager déterministe et la retarification réactive, la plateforme garantit la continuité transactionnelle. En production, le taux d'échec de commande est tombé sous 0,1\,\%, 92\,\% des dérives tarifaires sont résorbées interactivement, et aucun litige financier (ADM) lié aux segments passifs n'a été constaté sur deux ans d'exploitation.
+
+Cette expérience valide l'ensemble des compétences du titre d'\textbf{Expert en Ingénierie Informatique} (Bac+5 / RNCP 36137) et positionne la plateforme pour accueillir les futures évolutions du secteur, notamment la norme \textbf{IATA ONE Order} et l'observabilité distribuée via \textbf{OpenTelemetry}.
+
+\newpage
+\section*{Bloc 3 — Résumé et Mots-Clés (Français)}
+\begin{tcolorbox}[colback=LightGray, colframe=DarkSlate, arc=4pt, boxrule=0.8pt]
+\textbf{Résumé :} Ce mémoire présente les travaux d'architecture et de développement logiciel menés au cours d'une immersion de trente-huit mois chez SAS Everbloo sur la plateforme de distribution aérienne B2B \textbf{Metis}. Face à la coexistence des protocoles GDS historiques (Sabre, Amadeus) et de la norme moderne IATA NDC, l'étude résout les défis de cohérence transactionnelle et tarifaire.
+
+La solution mise en place repose sur : (1) un patron Adaptateur canonique isolant les particularités protocolaires (\texttt{SabreAdapter.ts}), (2) un renouvellement silencieux des jetons OAuth2 avec mise en file d'attente des requêtes concurrentes, (3) un algorithme déterministe de réconciliation des passagers (\texttt{matchesPaxRefId}) gérant les cas limites IATA (nourrissons sans siège, noms composés), (4) un moteur de retarification réactif (\textit{reshopping} HTTP 409) permettant la confirmation d'un nouveau tarif sans perte de saisie, et (5) une gestion asynchrone multi-devises et des segments passifs éliminant les pénalités d'agences (ADM). En production, le taux d'erreur de création d'ordre est inférieur à 0,1\,\% et le temps de recherche a été réduit de 28\,\%.
+
+\vspace{0.2cm}
+\textbf{Mots-clés :} Distribution Aérienne, GDS (Sabre, Amadeus), IATA NDC, Architecture SOA, Micro-Frontends Nuxt 3, TypeScript, Retarification Temps Réel, Cohérence Transactionnelle, Multi-Devises ISO 4217, Prévention ADM.
+\end{tcolorbox}
+
+\vspace{0.4cm}
+\selectlanguage{english}
+\section*{Block 3 — Abstract and Keywords (English)}
+\begin{tcolorbox}[colback=LightGray, colframe=DarkSlate, arc=4pt, boxrule=0.8pt]
+\textbf{Abstract:} This master's thesis presents the software engineering and architectural contributions developed during a thirty-eight-month apprenticeship at SAS Everbloo on the \textbf{Metis} B2B flight distribution platform. Addressing the technical tension between legacy Global Distribution Systems (GDS Sabre, Amadeus) and the modern IATA NDC standard, this research focuses on ensuring transactional and pricing consistency across hybrid booking flows.
+
+The engineered solution combines: (1) a canonical Adapter design pattern decoupling supplier-specific payloads (\texttt{SabreAdapter.ts}), (2) a silent OAuth2 token renewal mechanism with FIFO request queuing, (3) a deterministic passenger reconciliation algorithm (\texttt{matchesPaxRefId}) handling complex IATA edge cases (lap infants, compound names, orphaned ancillaries), (4) a reactive reshopping engine (HTTP 409) facilitating dynamic fare updates without user session data loss, and (5) an asynchronous multi-currency pipeline paired with isolated passive segment synchronization to prevent airline debit memos (ADM). In production, order creation failure rates dropped below 0.1\%, while shopping response times improved by 28\%.
+
+\vspace{0.2cm}
+\textbf{Keywords:} Airline Distribution, GDS (Sabre, Amadeus), IATA NDC, SOA Architecture, Nuxt 3 Micro-Frontends, TypeScript, Real-Time Reshopping, Transactional Consistency, Multi-Currency ISO 4217, ADM Prevention.
+\end{tcolorbox}
+
+\end{document}

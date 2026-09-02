@@ -1,0 +1,79 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usepackage{lmodern}
+\usepackage{geometry}
+\geometry{a4paper, top=24mm, bottom=24mm, left=24mm, right=24mm}
+\usepackage{xcolor}
+\definecolor{NavyBlue}{HTML}{0A2540}
+\definecolor{CobaltBlue}{HTML}{0055B3}
+\definecolor{DarkSlate}{HTML}{2D3748}
+\definecolor{LightGray}{HTML}{F7FAFC}
+\usepackage{tcolorbox}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true, linkcolor=CobaltBlue, urlcolor=CobaltBlue}
+
+\title{\vspace{-1cm}\Huge\textbf{\textcolor{NavyBlue}{Mémoire PRO-ENT5 — Étape 3}}\\[6pt]
+\Large\textbf{\textcolor{CobaltBlue}{Critique et Analyse Réflexive}}}
+\author{\textbf{Jérémy SOLER} — Apprenti Architecte Systèmes d'Information\\
+SAS Everbloo / Metis Digital — ETNA (Titre d'Expert en Ingénierie Informatique)}
+\date{Année académique 2025 -- 2026}
+
+\begin{document}
+\maketitle
+
+\vspace{0.2cm}
+\begin{tcolorbox}[colback=LightGray, colframe=NavyBlue, arc=4pt, boxrule=1.1pt]
+\centering\textbf{Problématique d'Ingénierie :}\\
+\textit{« Comment garantir la cohérence transactionnelle et tarifaire d'un moteur de réservation aérien agrégeant des protocoles hybrides (GDS et NDC) ? »}
+\end{tcolorbox}
+
+\section*{Temps 1 — Analyse Critique et Confrontation des Approches}
+
+\subsection*{1. Confrontation des Options d'Architecture}
+Face aux contraintes du secteur aérien, plusieurs approches techniques ont été évaluées :
+\begin{itemize}[itemsep=2pt]
+    \item \textbf{REST/JSON Canonique vs GraphQL :} L'utilisation de GraphQL semblait séduisante pour limiter l'over-fetching sur les offres de vol volumineuses. Cependant, l'absence de mise en cache HTTP native et le fait qu'aucun transporteur aérien ne fournisse d'API GraphQL ont conduit à privilégier une architecture REST/JSON avec des DTOs typés TypeScript.
+    \item \textbf{Flux Synchrone Orchestré vs Kafka Event-Driven :} Pour l'émission d'un billet d'avion, le client et le transporteur exigent une confirmation synchrone immédiate ($<$ 3\,s) pour garantir le prix. L'asynchronisme total via Kafka a donc été écarté pour le cycle direct de checkout, tout en restant pertinent pour le traitement différé des notifications de changement d'horaires (OCN).
+    \item \textbf{Adaptateur Modulaire vs Couche d'Intégration Point-à-Point :} L'intégration ad-hoc aurait créé un code spaghetti ingérable. L'introduction du patron Adaptateur a garanti une étanchéité stricte entre les connecteurs externes et la logique métier.
+\end{itemize}
+
+\subsection*{2. Preuves de Terrain et Résultats Chiffrés}
+L'architecture déployée a été éprouvée sur plus de 100 agences :
+\begin{itemize}[itemsep=2pt]
+    \item Taux d'échec de création d'ordre NDC réduit à $<$ 0,1\,\% (hors pannes serveur compagnies) ;
+    \item Réduction de 28\,\% du temps de réponse moyen de shopping (de 4,2\,s à 3,0\,s) ;
+    \item Élimination totale des litiges ADM pour double facturation de segments passifs.
+\end{itemize}
+
+\subsection*{3. Position Finale Défendue}
+La position défendue repose sur une architecture orientée services (SOA) découplée, couplant un backend Node.js non-bloquant et des micro-frontends Nuxt 3 réactifs, sécurisée par une gestion de sessions OAuth2 avec file d'attente FIFO et un moteur de repricing interactif.
+
+\vspace{0.4cm}
+\section*{Temps 2 — Analyse Réflexive et Maturation Professionnelle}
+
+\subsection*{1. Retour Critique sur l'Action et Gestion des Crises}
+L'expérience m'a confronté aux réalités imprévues de la production : pannes d'API tierces un lundi matin, certificats TLS expirés sur les passerelles Sabre, blocages de transactions MySQL (deadlocks) et erreurs d'arrondis monétaires sur les taxes internationales.
+
+Ces situations de stress m'ont appris à abandonner la panique pour une démarche méthodique : corrélation de logs Winston, diagnostic d'infrastructure et communication transparente auprès des agences partenaires.
+
+\subsection*{2. Ce qui Serait Fait Différemment avec le Recul}
+\begin{itemize}[itemsep=2pt]
+    \item \textbf{Gestion des Versions Node.js :} Certains modules dépendent encore de Node 16. J'aurais dû imposer une migration complète vers Node 20 LTS plus tôt plutôt que de maintenir des scripts de compatibilité Pixi.
+    \item \textbf{Monorepo et Sous-Modules Git :} L'utilisation de sous-modules Git a créé des frictions lors des déploiements concurrents. L'adoption d'un monorepo unifié avec Turborepo ou PNPM Workspaces aurait simplifié l'intégration continue.
+\end{itemize}
+
+\subsection*{3. Apports Professionnels et Personnels}
+Cette immersion de 38 mois a transformé ma posture : je suis passé d'un rôle de développeur centré sur le code immédiat à celui d'un architecte capable de négocier avec le Product Management, de défendre des choix techniques face aux impératifs commerciaux, et d'assurer la pérennité d'un système critique.
+
+\subsection*{4. Limites Actuelles et Pistes d'Approfondissement}
+\begin{itemize}[itemsep=2pt]
+    \item Intégration de la future norme \textbf{IATA ONE Order} pour unifier la commande et la billetterie ;
+    \item Mise en place d'un traçage distribué complet avec \textbf{OpenTelemetry} pour superviser les latences des API transporteurs en temps réel.
+\end{itemize}
+
+\end{document}

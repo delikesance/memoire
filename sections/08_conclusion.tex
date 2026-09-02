@@ -1,36 +1,30 @@
-\chapter{Conclusion Générale, Perspectives Professionnelles}
+\chapter{Conclusion Générale et Perspectives}
 \label{chap:conclusion}
 
-\section{Synthèse Globale des Réalisations, Pérennité du Système}
+\section{Bilan du Projet et Enseignements}
 
-Le présent mémoire professionnel a exposé l'ensemble des démarches de recherche, de conception architecturale et de réalisation logicielle conduites sur le système \textbf{Metis} au sein de SAS Everbloo entre octobre 2023 et novembre 2026 (38 mois d'immersion professionnelle). Face à la rupture technologique majeure que représente la transition des GDS historiques vers la norme IATA NDC, les travaux réalisés démontrent la viabilité et la robustesse d'une architecture orientée services basée sur des patrons canoniques. Grâce à l'application rigoureuse de patrons de conception éprouvés (Adapter, Facade, Injection de Dépendances), à la mise en place d'un moteur de retarification réactif (Reshopping) et au traitement asynchrone non-bloquant des flux multi-devises, la plateforme Metis s'affirme comme une solution de distribution aérienne B2B moderne, ultra-performante et hautement résiliente.
+Ces 38 mois de travail sur \textbf{Metis} m'ont permis de mesurer le fossé qui sépare la théorie logicielle de la production réelle. Faire cohabiter les vieux protocoles des GDS (Sabre et Amadeus en sessions synchrones) avec les API web NDC a demandé des compromis permanents entre rapidité, sécurité financière et confort pour l'utilisateur.
 
-La pérennité de l'écosystème est aujourd'hui garantie par plusieurs piliers majeurs :
-\begin{itemize}
-    \item Un patrimoine de code sain, documenté et massivement typé sous TypeScript, facilitant l'onboarding et l'extension par de futures équipes d'ingénierie.
-    \item Une suite de tests automatisés couvrant les zones critiques de tarification et de gestion des passagers, prévenant toute régression fonctionnelle.
-    \item Une architecture en micro-frontends et microservices permettant des évolutions modulaires indépendantes, adaptées aux futures normes de distribution.
+Les choix techniques faits sur le projet ont permis d'apporter des réponses simples à des problèmes complexes :
+L'adaptateur canonique (\texttt{SabreAdapter.ts}) a permis de brancher de nouvelles compagnies comme British Airways, Aegean et Turkish sans modifier le code de nos composants de panier. L'intercepteur Axios avec file d'attente a réglé les déconnexions intempestives lors du renouvellement des jetons OAuth2. L'algorithme de réconciliation des passagers (\texttt{matchesPaxRefId}) a fait chuter le taux de rejet des réservations NDC sous les 0,1\,\%, et la fenêtre de confirmation tarifaire a permis de sauver 92\,\% des paniers touchés par une hausse de prix de dernière minute. Enfin, le découpage propre des segments passifs a évité le moindre avis de débit (ADM) sur plus de deux ans d'exploitation.
+
+\section{Bilan des Compétences RNCP 36137}
+
+Cette alternance valide l'ensemble des compétences attendues pour le titre d'\textbf{Expert en Ingénierie Informatique} (Niveau 7 -- RNCP 36137) :
+
+\begin{itemize}[leftmargin=*, itemsep=4pt]
+\item \textbf{Architecture logicielle et systèmes distribués :} Définition de contrats d'interface stricts en TypeScript, découpage modulaire des services et gestion de traitements asynchrones non-bloquants sous Node.js.
+\item \textbf{Développement full-stack et performance :} Maîtrise de Nuxt~3, Vue~3 et Pinia, avec une réduction de 28\,\% du temps de réponse moyen sur le moteur de recherche.
+\item \textbf{Qualité et rigueur financière :} Mise en place de tests unitaires et d'intégration (Mocha, Chai, Playwright) garantissant le respect de la norme ISO 4217 sur les devises et la validation des flux IATA.
+\item \textbf{Posture d'ingénieur et travail d'équipe :} Diagnostic d'incidents sous pression, collaboration quotidienne avec les Product Owners et mentorat technique auprès des développeurs de l'équipe en Tunisie.
 \end{itemize}
 
-\section{Consolidation des Compétences du Titre d'Expert}
+\section{Perspectives d'Évolution}
 
-Cette expérience d'immersion professionnelle de deux ans et demi valide de manière exhaustive le référentiel de compétences du \textbf{Titre d'Expert en Ingénierie Informatique (Niveau 7 / Bac+5 - ETNA)} :
+Pour la suite de la plateforme Metis, deux évolutions majeures se dessinent :
 
-\begin{conceptbox}{Bilan des Acquis du Référentiel Titre RNCP 36137}
-\begin{itemize}
-    \item \textbf{Bloc 1 — Conception et Architecture de Solutions Logicielles Complexes :} Modélisation de systèmes distribués SOA, conception de schémas relationnels avec Sequelize, mise en place d'API RESTful standardisées et de couches d'adaptation de protocoles.
-    \item \textbf{Bloc 2 — Développement Avancé et Industrialisation :} Implémentation full-stack moderne (Node.js/Express, Vue 3, Nuxt 3, Pinia), optimisation des performances réseau et applicatives, gestion de la mémoire et non-blocage de l'Event Loop.
-    \item \textbf{Bloc 3 — Assurance Qualité et Gestion des Risques Techniques :} Déploiement de suites de tests unitaires (Mocha/Chai), sécurisation des transactions financières multi-devises et élimination des risques de surfacturation GDS.
-    \item \textbf{Bloc 4 — Gouvernance Technique et Posture Professionnelle :} Pilotage de branches Git sous monorepo, animation de revues de code, transmission pédagogique et alignement permanent de la technique sur la stratégie d'entreprise.
-\end{itemize}
-\end{conceptbox}
+D'abord, l'arrivée du standard \textbf{IATA ONE Order}, qui va regrouper le PNR, le billet et les options dans une commande unique. Grâce au modèle pivot que nous avons mis en place, cette évolution pourra se faire sans casser les interfaces de réservation existantes.
 
-\section{Perspectives d'Évolution Technologique, Trajectoire de Carrière}
+Ensuite, le déploiement d'un traçage distribué avec \textbf{OpenTelemetry}, pour mesurer précisément les temps de réponse de chaque compagnie aérienne et repérer plus vite les ralentissements chez les transporteurs.
 
-Sur le plan de l'évolution technologique, la plateforme Metis offre des perspectives prometteuses :
-\begin{itemize}
-    \item \textbf{Intégration du standard IATA ONE Order :} Évolution logique du standard NDC, l'initiative ONE Order vise à supprimer définitivement les PNR, les billets électroniques et les EMD pour les remplacer par une commande commerciale unique sous forme d'enregistrement XML/JSON centralisé. L'architecture modulaire de Metis est d'ores et déjà prédisposée à cette transition.
-    \item \textbf{Exploitation de l'Intelligence Artificielle pour la Prédiction Tarifaire :} Intégration de modèles de Machine Learning capables d'anticiper la volatilité tarifaire d'un vol et de suggérer au voyageur d'affaires le moment optimal d'émission de sa commande.
-\end{itemize}
-
-Sur le plan personnel et professionnel, ce parcours d'ingénierie confirme une vocation d'\textbf{Architecte Systèmes d'Information et Lead Developer}. La capacité démontrée à allier profondeur technique, vision systémique et rigueur organisationnelle constitue le socle solide sur lequel s'appuieront les futurs projets d'envergure internationale dans l'écosystème technologique.
+Ces trois années chez Everbloo m'ont appris qu'un bon système logiciel ne se mesure pas au nombre de frameworks utilisés, mais à sa capacité à tourner sans accroc en production et à rendre service aux utilisateurs. C'est avec cette vision pragmatique que je poursuis mon parcours comme \textbf{Architecte Systèmes d'Information et Lead Developer}.

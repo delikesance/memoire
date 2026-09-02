@@ -31,6 +31,8 @@
 \usepackage{booktabs}
 \usepackage{tabularx}
 \usepackage{array}
+\usepackage{colortbl}
+\usepackage{longtable}
 \usepackage{float}
 \usepackage{tikz}
 \usetikzlibrary{arrows.meta,positioning,shapes.geometric,fit,calc,backgrounds,shadows}
@@ -131,9 +133,9 @@
 
 \usepackage{listings}
 \lstdefinelanguage{TypeScript}{
-  keywords={typeof, new, true, false, catch, function, return, null, catch, switch, var, if, in, while, do, else, case, break, export, class, extends, public, private, static, implements, interface, let, const, async, await},
+  keywords={typeof, new, true, false, catch, function, return, null, switch, var, if, in, while, do, else, case, break, export, class, extends, public, private, static, implements, interface, let, const, async, await, readonly},
   keywordstyle=\color{CobaltBlue}\bfseries,
-  ndkeywords={class, export, boolean, throw, implements, import, this, string, number, any},
+  ndkeywords={class, export, boolean, throw, implements, import, this, string, number, any, void, Promise, Record, Set, Array},
   ndkeywordstyle=\color{NavyBlue}\bfseries,
   identifierstyle=\color{DarkSlate},
   sensitive=true,
@@ -141,7 +143,24 @@
   morecomment=[s]{/*}{*/},
   commentstyle=\color{gray}\itshape,
   stringstyle=\color{AccentGreen},
-  morestring=[b]"
+  morestring=[b]',
+  morestring=[b]",
+  morestring=[b]`
+}
+
+\lstdefinelanguage{json}{
+  basicstyle=\ttfamily\footnotesize\color{DarkSlate},
+  showstringspaces=false,
+  breaklines=true,
+  frame=single,
+  stringstyle=\color{CobaltBlue},
+  literate=
+   *{:}{{{\color{NavyBlue}{:}}}}{1}
+    {,}{{{\color{NavyBlue}{,}}}}{1}
+    {\{}{{{\color{NavyBlue}{\{}}}}{1}
+    {\}}{{{\color{NavyBlue}{\}}}}}{1}
+    {[}{{{\color{NavyBlue}{[}}}}{1}
+    {]}{{{\color{NavyBlue}{]}}}}{1},
 }
 
 \lstset{
@@ -158,11 +177,14 @@
     numbersep=8pt,
     tabsize=2,
     showstringspaces=false,
-    keepspaces=true
+    keepspaces=true,
+    mathescape=false
 }
 
 \usepackage{hyperref}
 \hypersetup{
+    plainpages=false,
+    pdfpagelabels=true,
     colorlinks=true,
     linkcolor=CobaltBlue,
     citecolor=SkyBlue,

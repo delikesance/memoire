@@ -1,50 +1,40 @@
-\chapter{Introduction Générale, Cadrage Stratégique}
+\chapter{Introduction Générale et Cadrage Stratégique}
 \label{chap:introduction}
 
-\section{Contexte Sectoriel de la Distribution Aérienne}
+\section{Contexte Sectoriel et Évolution de la Distribution Aérienne}
 
-L'industrie aéronautique commerciale et les technologies du voyage (\textit{TravelTech}) reposent sur des systèmes hautement interconnectés et contraints. Depuis plusieurs décennies, la réservation et la distribution mondiale de billets d'avion s'appuient sur les \textit{Global Distribution Systems} (GDS), principalement Sabre, Amadeus et Travelport. Ces plateformes historiques ont standardisé l'échange d'inventaires, d'horaires et de tarifs via le format textuel normé EDIFACT (\textit{Electronic Data Interchange for Administration, Commerce and Transport}).
+Dans le secteur du voyage d'affaires (B2B), réserver et émettre un billet d'avion est une opération critique. Les plateformes de réservation doivent interroger des inventaires aériens mondiaux en quelques secondes, tout en garantissant des prix justes au centime près pour la comptabilité des agences.
 
-Aujourd'hui, ce paysage évolue sous l'impulsion de l'IATA (\textit{International Air Transport Association}) avec la norme \textbf{NDC} (\textit{New Distribution Capability}). Reposant sur des API web modernes (XML/JSON RESTful), NDC permet aux compagnies aériennes de distribuer directement leurs offres sans passer obligatoirement par les GDS. Les transporteurs peuvent ainsi proposer des tarifs dynamiques en temps réel et des services additionnels personnalisés (\textit{ancillaries} : choix du siège, bagages, repas).
+Pendant des décennies, cette distribution est passée exclusivement par les \textit{Global Distribution Systems} (GDS), principalement Sabre et Amadeus. Ces systèmes fonctionnent avec des protocoles anciens issus de la norme EDIFACT. Leur principe repose sur des sessions synchrones avec état : le serveur garde la main sur le dossier passager (\textit{Passenger Name Record} ou PNR), bloque les sièges temporairement, puis valide la réservation étape par étape jusqu'à l'émission du billet.
 
-Pour les plateformes B2B comme \textbf{Metis}, éditées pour les agences de voyages et les entreprises (\textit{Self-Booking Tools} - SBT), cette coexistence crée un défi technique majeur. L'application ne peut pas choisir un seul canal : elle doit à la fois maintenir la compatibilité avec les flux GDS existants (requêtes SOAP, sessions avec état) et ingérer en direct les flux NDC hétérogènes de multiples compagnies aériennes (Air France-KLM, British Airways, Iberia, Lufthansa Group, Turkish Airlines).
+Depuis quelques années, les compagnies aériennes déploient la norme \textbf{NDC} (\textit{New Distribution Capability}) de l'IATA. Bâtie sur des API web modernes (REST JSON et XML), la norme NDC permet aux transporteurs de vendre leurs vols en direct sans passer par les GDS. Les compagnies peuvent ainsi faire varier leurs tarifs en temps réel (\textit{dynamic pricing}) et vendre des options personnalisées (\textit{ancillaries} : bagages, choix du siège, coupe-file).
 
-\section{Définitions Terminologiques Fondamentales}
-
-Pour bien appréhender les problématiques abordées dans ce mémoire, voici les définitions des concepts techniques et métiers clés :
-
-\begin{itemize}
-    \item \textbf{Global Distribution System (GDS) :} Système centralisé (Sabre, Amadeus) servant d'intermédiaire entre les compagnies aériennes et les distributeurs pour la disponibilité des vols, les tarifs et l'émission des billets.
-    \item \textbf{Norme IATA NDC (\textit{New Distribution Capability}) :} Standard XML/JSON permettant aux compagnies de commercialiser directement leurs offres en temps réel sans intermédiaire GDS.
-    \item \textbf{Dossier Passager (PNR - \textit{Passenger Name Record}) :} Dossier informatique unique (code alphanumérique à 6 caractères) regroupant les vols, les passagers, les tarifs et le statut de billetterie.
-    \item \textbf{Segments Passifs (\textit{Passive Segments}) :} Segments de réservation fictifs inscrits dans un GDS par une agence pour tracer la vente dans son logiciel comptable de \textit{back-office}, sans réserver de place physique auprès de la compagnie.
-    \item \textbf{Self-Booking Tool (SBT) :} Portail web permettant aux salariés d'entreprises de réserver leurs déplacements professionnels en respectant leur politique voyage interne.
-    \item \textbf{Retarification Dynamique (\textit{Reshopping / Reprice}) :} Vérification immédiate du prix et de la disponibilité auprès du fournisseur juste avant l'achat final pour éviter de facturer un tarif expiré.
-    \item \textbf{Point de Vente (POS - \textit{Point of Sale}) :} Configuration technique et commerciale propre à une agence (identifiants GDS, devises de facturation, taux de commission).
-\end{itemize}
+Pour la plateforme \textbf{Metis} --- développée par Everbloo pour équiper des réseaux d'agences comme TourCom et des entreprises ---, cette transition pose un vrai défi technique. Notre application doit faire cohabiter deux mondes : d'un côté, les flux GDS traditionnels en commandes cryptiques ou SOAP avec verrouillage de places ; de l'autre, les flux NDC directs (Air France-KLM, British Airways, Lufthansa Group), qui fonctionnent par requêtes web sans état avec des offres temporaires valables seulement quelques minutes.
 
 \section{Énonciation de la Problématique d'Ingénierie}
 
-Dans cet environnement, la plateforme \textbf{Metis} fait face à des flux très volatils : un tarif peut expirer en quelques minutes, un siège peut être réservé par un autre utilisateur en simultané, et les devises varient selon les agences. La moindre incohérence de données lors de la réservation (\textit{Order Creation}) entraîne un échec d'émission, des pertes de marge ou des blocages comptables.
+Dans la pratique quotidienne de Metis Connect, un utilisateur cherche un vol, sélectionne ses options, remplit les noms des voyageurs et passe au paiement. Entre le moment où il voit le prix et le moment où il valide son panier, les serveurs des compagnies peuvent fermer une classe tarifaire ou modifier le montant des taxes d'aéroport.
 
-Dès lors, la problématique centrale de ce travail d'ingénierie s'énonce ainsi :
+Face à ces changements de dernière minute, le moteur de réservation ne peut pas débiter un montant différent sans prévenir le client, mais il ne doit pas non plus annuler brutalement la commande en effaçant toutes les informations déjà saisies. S'ajoutent à cela les conversions de devises (norme ISO 4217) et les règles de saisie IATA sur les noms et les bébés sans siège, dont le non-respect bloque immédiatement l'émission du billet.
 
-\begin{tcolorbox}[colback=LightGray,colframe=NavyBlue,arc=3pt,boxrule=1pt]
-\begin{center}
-\large\bfseries\textcolor{NavyBlue}{
-« Comment garantir la cohérence transactionnelle et tarifaire d'un moteur de réservation aérien agrégeant des protocoles hybrides (GDS et NDC) ? »
-}
-\end{center}
-\end{tcolorbox}
+La problématique centrale de mes travaux d'ingénierie s'énonce ainsi :
 
-Ce travail explore concrètement la mise en place d'adaptateurs modulaires (Design Patterns), la fiabilisation des flux asynchrones Node.js, le calcul précis des devises (norme ISO 4217) et la gestion d'interfaces réactives avec Nuxt 3 et Vue 3.
+\vspace{0.4cm}
+\begin{quote}
+\centering
+\large\itshape\color{NavyBlue}
+«~Comment garantir la cohérence transactionnelle et tarifaire d'un moteur de réservation aérien agrégeant des protocoles hybrides (GDS et NDC) ?~»
+\end{quote}
+\vspace{0.4cm}
 
-\section{Structure Argumentative du Mémoire}
+Pour résoudre cette équation en production, j'ai conçu une architecture modulaire associant une API backend Node.js (avec Sequelize) et des interfaces Nuxt~3 / Vue~3 en TypeScript.
 
-Le mémoire s'articule autour de trois parties :
+\section{Organisation du Mémoire}
 
-\begin{enumerate}
-    \item \textbf{Partie 1 : Contexte Professionnel, Écosystème Métier de l'Aérien :} Présentation de l'entreprise d'accueil Everbloo, positionnement de mon rôle d'apprenti architecte au sein de l'équipe de développement, description de la stack technique et formulation des hypothèses de travail.
-    \item \textbf{Partie 2 : Réalisations Techniques, Résolution de la Problématique :} Description détaillée des chantiers réalisés (1~554 commits sur la branche de développement) : intégration GDS/NDC, moteur de retarification en temps réel, optimisation de recherche, gestion multi-devises, back-office d'administration et tests automatisés.
-    \item \textbf{Partie 3 : Démarche Réflexive, Analyse Critique de l'Expérience :} Bilan critique des choix d'architecture, analyse des compromis et des limites techniques, pistes d'amélioration et retour d'expérience sur mon évolution vers le titre d'Expert en Ingénierie Informatique.
-\end{enumerate}
+Le mémoire est organisé en trois grandes parties :
+
+La \textbf{première partie} présente l'entreprise Everbloo, l'organisation de l'équipe et le socle technique de Metis, avant de détailler les quatre hypothèses de conception retenues pour le projet.
+
+La \textbf{deuxième partie} détaille les développements réalisés pour résoudre la problématique : adaptateurs canoniques, moteur de recherche graphique, terminal cryptique pour les billettistes, retarification interactive (\textit{reshopping}), réconciliation des passagers, gestion multi-devises et suite de tests automatisés.
+
+La \textbf{troisième partie} dresse le bilan des résultats obtenus. J'y analyse trois incidents concrets rencontrés en production et j'explique comment ces 38 mois d'alternance ont forgé ma façon de travailler, de gérer la pression en production et de concevoir des systèmes fiables. Le document se termine par un bilan de compétences et les perspectives d'évolution de la distribution aérienne.
