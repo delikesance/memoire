@@ -1,36 +1,18 @@
-\chapter{Conclusion Générale et Perspectives}
+\chapter{Conclusion}
 \label{chap:conclusion}
 
-\section{Bilan du Projet et Enseignements}
+\section{Ce qui a tenu}
 
 Sur 38 mois, Metis a surtout montré l'écart entre modèles propres et production : sessions GDS synchrones (Sabre, Amadeus) d'un côté, API NDC sans état de l'autre. Les arbitrages se sont joués entre latence, risque financier (ADM) et parcours utilisateur.
 
-Ce qui a tenu :
-\begin{itemize}[leftmargin=*, itemsep=4pt]
-\item \texttt{SabreAdapter.ts} a permis de brancher British Airways, Aegean et Turkish sans retoucher les composants panier ;
-\item l'intercepteur Axios avec file d'attente a coupé les déconnexions au refresh OAuth2 ;
-\item \texttt{matchesPaxRefId} a ramené le rejet NDC sous 0,1\,\% ;
-\item la modale de confirmation tarifaire a sauvé 92\,\% des paniers touchés par une hausse de dernière minute ;
-\item le découpage des segments passifs a évité tout ADM pour double écriture sur plus de deux ans.
-\end{itemize}
+\texttt{SabreAdapter.ts} a permis de brancher British Airways, Aegean et Turkish sans retoucher les composants panier. L'intercepteur Axios avec file d'attente a coupé les déconnexions au refresh OAuth2. \texttt{matchesPaxRefId} a ramené le rejet NDC sous 0,1\,\%. La modale de confirmation tarifaire a sauvé 92\,\% des paniers touchés par une hausse de dernière minute. Le découpage des segments passifs a évité tout ADM pour double écriture sur plus de deux ans.
 
-\section{Bilan des Compétences RNCP 36137}
+\section{Lien avec le RNCP 36137}
 
-Cette formation couvre les compétences du titre d'\textbf{Expert en Ingénierie Informatique} (Niveau 7 -- RNCP 36137) :
+Le titre d'\textbf{Expert en Ingénierie Informatique} (niveau 7) demande de concevoir des systèmes distribués, de tenir la qualité en production et de travailler en équipe sur des enjeux métier. Sur Metis, ça s'est joué concrètement : contrats TypeScript entre services, appels non bloquants Node.js vers Sabre/NDC, front Nuxt~3 / Vue~3 / Pinia avec une baisse de 28\,\% du temps de réponse moyen sur la recherche, suites Mocha / Chai / Playwright pour l'appairage passagers et l'égalité ISO 4217 sur les taxes. Les lundis matins (certificat expiré, deadlocks, écarts de centimes) et le travail quotidien avec les PO et l'équipe en Tunisie ont autant compté que les specs écrites.
 
-\begin{itemize}[leftmargin=*, itemsep=4pt]
-\item \textbf{Architecture logicielle et systèmes distribués :} contrats d'interface TypeScript, découpage modulaire des services, traitements asynchrones non bloquants sous Node.js.
-\item \textbf{Développement full-stack et performance :} Nuxt~3, Vue~3, Pinia ; réduction de 28\,\% du temps de réponse moyen sur le moteur de recherche.
-\item \textbf{Qualité et rigueur financière :} tests Mocha, Chai, Playwright ; conformité ISO 4217 et contrôles de flux IATA.
-\item \textbf{Posture d'ingénieur et travail d'équipe :} diagnostic sous pression, collaboration quotidienne avec les PO, accompagnement technique de l'équipe en Tunisie.
-\end{itemize}
+\section{Suite}
 
-\section{Perspectives d'Évolution}
+Deux chantiers pour la suite de Metis. \textbf{IATA ONE Order} regroupera PNR, billet et options dans une commande unique ; le modèle pivot déjà en place limite l'impact sur les écrans existants. \textbf{OpenTelemetry} permettra de mesurer la latence par transporteur et d'isoler plus vite les ralentissements amont.
 
-Deux chantiers structurants pour la suite de Metis.
-
-\textbf{IATA ONE Order} regroupera PNR, billet et options dans une commande unique. Le modèle pivot déjà en place limite l'impact sur les écrans de réservation existants.
-
-Le déploiement d'\textbf{OpenTelemetry} permettra de mesurer la latence par transporteur et d'isoler plus vite les ralentissements amont.
-
-Je poursuis comme \textbf{Architecte Systèmes d'Information et Lead Developer}, avec le même critère : un système se juge à ce qu'il fait en production pour les utilisateurs, pas à la liste des frameworks du \texttt{package.json}.
+Je poursuis comme \textbf{Architecte Systèmes d'Information et Lead Developer}. Critère inchangé : un système se juge à ce qu'il fait en production pour les utilisateurs, pas à la liste des frameworks du \texttt{package.json}.

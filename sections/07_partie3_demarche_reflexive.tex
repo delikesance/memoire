@@ -1,59 +1,51 @@
-\part{Bilan, Analyse Critique et Retours d'Expérience}
+\part{Bilan et retours d'expérience}
 \label{part:demarche_reflexive}
 
-\chapter{Bilan Technique et Analyse Critique des Hypothèses}
+\chapter{Ce que les hypothèses n'ont pas couvert}
 \label{chap:reponse_problematique}
 
-\section{Bilan Global de la Démarche d'Ingénierie}
+\section{Bilan après 38 mois}
 
-Après 38 mois de développement et d'exploitation sur Metis, le bilan des choix d'architecture est mitigé --- et c'est normal. Faire cohabiter GDS et NDC n'était pas qu'un problème d'intégration : chaque décision a pesé entre propreté du code, contraintes transporteurs et réalité économique des agences.
+Après 38 mois sur Metis, le bilan des choix d'architecture est mitigé --- et c'est normal. Faire cohabiter GDS et NDC n'était pas qu'un problème d'intégration : chaque décision a pesé entre propreté du code, contraintes transporteurs et réalité économique des agences.
 
-Sur le terrain, l'adaptateur (\texttt{SabreAdapter.ts}) a isolé le frontend des formats compagnies, la modale de retarification a limité les abandons sur hausses de prix, et \texttt{matchesPaxRefId} a nettoyé les données passagers avant \texttt{OrderCreate}. Aucune de ces briques n'a tenu du premier coup : chaque hypothèse a heurté ses limites en production.
+Sur le terrain, \texttt{SabreAdapter.ts} a isolé le frontend des formats compagnies, la modale de retarification a limité les abandons sur hausses de prix, et \texttt{matchesPaxRefId} a nettoyé les données passagers avant \texttt{OrderCreate}. Aucune de ces briques n'a tenu du premier coup. Ci-dessous, les angles morts dans l'ordre où ils ont vraiment fait mal --- pas dans l'ordre du chapitre précédent.
 
-\section{Remise en Question et Limites Réelles des Quatre Hypothèses}
+\section{Ce qui a cassé ou forcé un compromis}
 
-\subsection{1. Limites de l'Hypothèse 1 (L'Adaptateur Canonique et le Modèle Pivot)}
-
-Sur le papier, \texttt{CanonicalFlightOffer} était séduisant : n'importe quel SOAP Sabre ou JSON NDC devient une structure commune, et le frontend ignore la provenance.
-
-Pour environ 90\,\% des vols simples (aller-retour économique standard), ça tient. Dès Turkish Airlines ou Lufthansa Group et leurs \textit{Branded Fares}, ça se complique. Ces offres collent au billet des services non dissociables --- bagage 23\,kg sur le premier tronçon seulement, sièges limités aux rangées arrière, conditions d'annulation hybrides.
-
-Forcer ces cas dans une interface TypeScript stricte alourdissait le modèle ou faisait perdre de l'info utile au voyageur. Contournement retenu : \texttt{rawCarrierMetadata: Record<string, any>}. Ce champ d'échappement casse la « pureté » du patron Adaptateur, mais il affiche les spécificités transporteur sans casser le typage du reste de l'appli. Workaround assumé, pas une leçon de design.
-
-\subsection{2. Limites de l'Hypothèse 2 (L'Appairage Déterministe des Passagers)}
+\subsection{Homonymes et \texttt{matchesPaxRefId}}
 
 \texttt{matchesPaxRefId} a fait descendre le rejet NDC sous 0,1\,\% : accents nettoyés, bébés liés aux adultes, bagages orphelins purgés.
 
-Angle mort : les homonymes parfaits sur un même dossier (père et fils \texttt{DUPONT/JEAN}). L'algo s'appuyait d'abord sur la clé textuelle normalisée ; tous les bagages partaient sur le premier passager, le second restait sans service. Rejet à l'émission.
+Angle mort : père et fils \texttt{DUPONT/JEAN} sur le même dossier. L'algo s'appuyait d'abord sur la clé textuelle normalisée ; tous les bagages partaient sur le premier passager. Rejet à l'émission.
 
 Correctif : combiner identité textuelle et index de position (\texttt{travelerIndex}) issu de Pinia, plus un warning UI quand deux voyageurs partagent exactement le même nom et prénom.
 
-\subsection{3. Limites de l'Hypothèse 3 (La Retarification Interactive et le Statut 409)}
+\subsection{Segments passifs vs ERP agences}
 
-L'interception du HTTP 409 avec \texttt{PriceChangeConfirmDialog.vue} affiche 92\,\% de réussite. Le chiffre mérite du contexte.
+Le découplage POS en base a éliminé les ADM pour double écriture Sabre/Amadeus sur plus de deux ans. Côté agences, effet de bord : Gestour, IEnterprise, TravelCloud ont des imports très rigides. Certains ERP refusent le PNR passif si la ligne comptable ne colle pas à leur convention, ou si la devise ne matche pas leur passerelle.
 
-Ça marche bien sur des écarts modérés (taxes +5 à +30\,€, ou bascule sur la sous-classe immédiatement supérieure) : le voyageur accepte, les coordonnées restent en mémoire, la commande passe.
+Solution retenue : table d'exceptions / règles par agence en PostgreSQL. Efficace commercialement, dette claire --- à maintenir à chaque montée de version ERP.
 
-Deux cas où la modale ne sauve rien :
-\begin{itemize}
-\item vol fermé net par le \textit{Revenue Management} (0 siège) ;
-\item saut massif (ex. +350\,€ sur un long-courrier au-delà du plafond de politique de voyage) --- l'utilisateur refuse et relance une recherche.
-\end{itemize}
+\subsection{\texttt{CanonicalFlightOffer} et les Branded Fares}
 
-Autre bug découvert en test : après refus, Pinia gardait temporairement les identifiants de l'ancienne offre. Une sélection trop rapide rejouait l'ancien \texttt{OfferID}. Correctif : \texttt{useBookingStore().\$reset()} à chaque fermeture de modale.
+Sur le papier, un modèle pivot unique était séduisant : n'importe quel SOAP Sabre ou JSON NDC devient une structure commune.
 
-\subsection{4. Limites de l'Hypothèse 4 (Les Segments Passifs et la Réalité des ERP)}
+Pour environ 90\,\% des vols simples (aller-retour économique), ça tient. Dès Turkish Airlines ou Lufthansa Group et leurs \textit{Branded Fares}, ça se complique : bagage 23\,kg sur le premier tronçon seulement, sièges limités aux rangées arrière, conditions d'annulation hybrides.
 
-Le découplage POS en base a éliminé les ADM pour double écriture Sabre/Amadeus sur plus de deux ans.
+Forcer ces cas dans une interface TypeScript stricte alourdissait le modèle ou faisait perdre de l'info. Contournement : \texttt{rawCarrierMetadata: Record<string, any>}. Ça casse la « pureté » du patron Adaptateur ; ça affiche les spécificités transporteur sans casser le typage du reste. Workaround assumé.
 
-Côté agences, effet de bord : Gestour, IEnterprise, TravelCloud ont des imports de segments passifs très rigides. Certains ERP refusent le PNR passif si la ligne comptable ne colle pas à leur convention, ou si la devise ne matche pas leur passerelle de paiement.
+\subsection{Le 409 ne sauve pas tous les paniers}
 
-Solution retenue : table d'exceptions / règles par agence en PostgreSQL. Efficace commercialement, dette opérationnelle claire --- à maintenir à chaque montée de version ERP.
+L'interception HTTP 409 avec \texttt{PriceChangeConfirmDialog.vue} affiche 92\,\% de réussite. Le chiffre mérite du contexte.
 
-\chapter{Analyse Critique, Galères de Production et Défis Techniques Réels}
+Ça marche sur des écarts modérés (taxes +5 à +30\,€, ou bascule sur la sous-classe immédiatement supérieure). Deux cas où la modale ne sauve rien : vol fermé net par le \textit{Revenue Management} (0 siège) ; saut massif (ex. +350\,€ au-delà du plafond de politique de voyage).
+
+Autre bug en test : après refus, Pinia gardait temporairement les identifiants de l'ancienne offre. Correctif : \texttt{useBookingStore().\$reset()} à chaque fermeture de modale.
+
+\chapter{Incidents de production et choix d'architecture}
 \label{chap:bilan_critique_technique}
 
-\section{Gestion du Cycle de Vie OAuth2 et File d'Attente de Requêtes}
+\section{OAuth2 : refresh silencieux et file d'attente}
 
 La gestion des jetons OAuth2 a été l'un des points les plus piégeux du projet.
 
@@ -129,7 +121,7 @@ export function setupAuthInterceptor(apiClient: AxiosInstance, authService: any)
 }
 \end{lstlisting}
 
-\section{Retour d'Expérience sur Trois Incidents Majeurs de Production}
+\section{Trois incidents concrets}
 
 Trois incidents concrets sur Metis, et ce qu'on en a tiré côté code.
 
@@ -179,7 +171,7 @@ Campagne promo chez une grande agence partenaire : réservations simultanées en
 
 Repro via script concurrent. Les traces montraient deux transactions mettant à jour \texttt{PointDeVente} (compteurs API) et \texttt{Dossier} (insert PNR) dans un ordre inversé --- verrous InnoDB croisés. Correctif : même ordre d'update dans Sequelize, isolation par défaut \texttt{READ COMMITTED}, verrouillage pessimiste ordonné (\texttt{SELECT ... FOR UPDATE} trié par clé primaire).
 
-\section{Dette Technique et Choix d'Architectures Alternatives}
+\section{Options écartées}
 
 Le tableau \ref{tab:alternatives_architecture} résume les options écartées et pourquoi.
 
@@ -193,7 +185,7 @@ Le tableau \ref{tab:alternatives_architecture} résume les options écartées et
 \rowcolor{CobaltBlue!12}
 \textbf{\color{NavyBlue}Option Écartée} & \textbf{\color{NavyBlue}Avantages Théoriques} & \textbf{\color{NavyBlue}Motif du Choix Retenu pour Metis} \\
 \hline
-GraphQL Unifié & Requêtes sur mesure, pas de sur-récupération de données (\textit{over-fetching}). & Rejeté au profit de \textbf{REST / JSON canonique} : mise en cache HTTP complexe et absence de support GraphQL chez les fournisseurs aériens. \\
+GraphQL Unifié & Requêtes sur mesure, pas de sur-récupération de données (\textit{over-fetching}). & Rejeté au profit de \textbf{REST / JSON} : mise en cache HTTP complexe et absence de support GraphQL chez les fournisseurs aériens. \\
 Architecture Kafka & Découplage maximal, absorption de pics de charge asynchrones. & Rejeté pour le flux de réservation direct : l'émission de billet requiert une \textbf{réponse synchrone immédiate ($<$ 3s)} pour garantir le prix au client. \\
 Web Components & Indépendance technologique absolue des modules graphiques. & Remplacé par des \textbf{SPAs Nuxt 3 / Vue 3 modulaires} : meilleure intégration TypeScript et absence de surcoût d'hydratation DOM. \\
 \hline
@@ -202,10 +194,10 @@ Web Components & Indépendance technologique absolue des modules graphiques. & R
 \label{tab:alternatives_architecture}
 \end{table}
 
-\chapter{Maturation Humaine, Posture Professionnelle et Réalités du Terrain}
+\chapter{Travail en équipe et responsabilités en production}
 \label{chap:posture_professionnelle}
 
-\section{Évolution Méthodologique et Trajectoire d'Autonomie Technique}
+\section{De la résolution de tickets à la conception}
 
 Sur 38 mois chez Everbloo, le vrai changement n'est pas le stack : c'est la méthode. Au début, je fermais le ticket Jira. Plus tard, je regardais si le correctif allait casser l'API deux sprints plus loin.
 
@@ -213,7 +205,7 @@ Les premiers mois, un bug de formulaire ou de taxes se réglait par une conditio
 
 La charge réelle et les retours agences ont forcé un autre rythme : cartographier les flux, anticiper les erreurs réseau, poser des contrats TypeScript stricts, évaluer les verrous transactionnels avant de coder. C'est dans ce cadre que sont passées des refontes comme le moteur de retarification et l'unification GDS/NDC.
 
-\section{Mentorat, Partage de Connaissances et Collaboration Interculturelle}
+\section{Équipe Paris / Tunisie}
 
 L'équipe est répartie entre Paris et la Tunisie. À distance, l'absence de discussions de couloir oblige à écrire les décisions techniques.
 
@@ -221,7 +213,7 @@ Exemple concret : fuseaux horaires sur vols internationaux. Un collègue de l'é
 
 Même approche en revue de code GitLab / GitHub : expliquer pourquoi un type strict évite une régression silencieuse, pourquoi l'ordre des transactions Sequelize prévient un deadlock, pourquoi ISO 4217 n'est pas optionnel sur les devises. Objectif : aligner l'équipe sur des règles opérables, pas sur des slogans qualité.
 
-\section{Rétrospective sur les Échecs Initiaux et Erreurs d'Estimation}
+\section{Estimations ratées la première année}
 
 La première année a accumulé des estimations trop optimistes, surtout sur la complexité des normes aéronautiques.
 
@@ -229,14 +221,14 @@ Premier cas : les \textit{ancillaries} NDC. J'avais pensé bagages et sièges co
 
 Sur SOAP Sabre aussi, les premières charges étaient trop basses. Le cas nominal tenait sur une slide ; le temps réel partait dans les timeouts réseau, sessions expirées et payloads inattendus.
 
-\section{Responsabilité Morale, Juridique et Impact Financier en Billetterie B2B}
+\section{Impact financier d'une panne}
 
-Une panne Metis n'est pas un exercice de style : elle touche la trésorerie des agences et la crédibilité d'Everbloo.
+Une panne Metis touche la trésorerie des agences et la crédibilité d'Everbloo.
 
 Un lundi à 9h30, pic d'activité : le support TourCom appelle --- réservations Sabre en cascade à cause d'un certificat intermédiaire expiré sur la passerelle. Des dizaines d'agents bloqués au téléphone avec leurs clients entreprises. Si l'outil ne répond pas, le client réserve ailleurs.
 
 Plus coûteux encore : un écart de taxes ou un segment passif en double sur Amadeus et Sabre se transforme en ADM, avec des pénalités qui peuvent monter à plusieurs milliers d'euros par dossier. D'où le temps passé sur l'arrondi bancaire, le refresh OAuth2 en tâche de fond et les contrôles pré-émission --- pas du zèle, de la protection de trésorerie.
 
-\section{Bilan Personnel et Évolution de ma Posture}
+\section{Ce que je retiens}
 
-Ces 38 mois ont surtout ancré trois réflexes : écrire du code qu'un collègue peut reprendre, traiter les pannes externes sans improvisation, et mesurer la qualité au comportement en production plutôt qu'au nombre de frameworks.
+Trois réflexes : écrire du code qu'un collègue peut reprendre, traiter les pannes externes sans improvisation, et mesurer la qualité au comportement en production plutôt qu'au nombre de frameworks.

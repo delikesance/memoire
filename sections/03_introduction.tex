@@ -1,23 +1,21 @@
-\chapter{Introduction Générale et Cadrage Stratégique}
+\chapter{Introduction}
 \label{chap:introduction}
 
-\section{Contexte Sectoriel et Évolution de la Distribution Aérienne}
+\section{Contexte : GDS, NDC et voyage d'affaires}
 
-Dans le voyage d'affaires (B2B), émettre un billet d'avion reste une opération critique. Les plateformes doivent interroger des inventaires mondiaux en quelques secondes et produire des montants exacts au centime près pour la comptabilité des agences.
+Émettre un billet d'avion en B2B reste une opération critique. Les plateformes doivent interroger des inventaires mondiaux en quelques secondes et produire des montants exacts au centime près pour la comptabilité des agences.
 
-Pendant des décennies, cette distribution a transité exclusivement par les \textit{Global Distribution Systems} (GDS), surtout Sabre et Amadeus. Ces systèmes s'appuient sur des protocoles issus d'EDIFACT et sur des sessions synchrones avec état : le serveur tient le dossier passager (\textit{Passenger Name Record} ou PNR), bloque temporairement les sièges, puis enchaîne les étapes jusqu'à l'émission.
+Pendant des décennies, cette distribution a transité exclusivement par les \textit{Global Distribution Systems} (GDS), surtout Sabre et Amadeus. Protocoles issus d'EDIFACT, sessions synchrones avec état : le serveur tient le dossier passager (\textit{Passenger Name Record} ou PNR), bloque temporairement les sièges, puis enchaîne jusqu'à l'émission.
 
-Les compagnies déploient depuis plusieurs années la norme \textbf{NDC} (\textit{New Distribution Capability}) de l'IATA. Basée sur des API web (REST JSON et XML), NDC leur permet de vendre en direct, hors GDS. Elles peuvent ajuster les tarifs en temps réel (\textit{dynamic pricing}) et pousser des options payantes (\textit{ancillaries} : bagages, siège, coupe-file).
+Les compagnies déploient aussi la norme \textbf{NDC} (\textit{New Distribution Capability}) de l'IATA. API web (REST JSON / XML), vente en direct hors GDS, \textit{dynamic pricing}, options payantes (\textit{ancillaries} : bagages, siège, coupe-file).
 
-Pour \textbf{Metis} --- développée par Everbloo pour des réseaux d'agences comme TourCom et pour des entreprises ---, le problème est concret. L'application doit faire tenir ensemble des flux GDS (commandes cryptiques ou SOAP, verrouillage de places) et des flux NDC directs (Air France-KLM, British Airways, Lufthansa Group), où l'offre n'est qu'un jeton temporaire valable quelques minutes.
+Sur \textbf{Metis} (Everbloo, réseaux comme TourCom, clients entreprises), les deux stacks cohabitent dans la même appli : flux GDS (cryptique ou SOAP, verrouillage de places) et flux NDC directs (Air France-KLM, British Airways, Lufthansa Group) où l'offre n'est qu'un jeton temporaire.
 
-\section{Énonciation de la Problématique d'Ingénierie}
+\section{Problématique}
 
-Sur Metis Connect, le parcours type est simple : recherche, sélection, saisie des voyageurs, paiement. Entre l'affichage du prix et la validation du panier, le transporteur peut fermer une classe ou recalculer les taxes d'aéroport.
+Sur Metis Connect, le parcours type est recherche $\rightarrow$ sélection $\rightarrow$ saisie des voyageurs $\rightarrow$ paiement. Entre l'affichage du prix et la validation du panier, le transporteur peut fermer une classe ou recalculer les taxes d'aéroport.
 
-Le moteur ne peut pas débiter un montant différent sans prévenir le client. Il ne peut pas non plus jeter le panier et effacer toute la saisie. S'ajoutent les conversions ISO 4217 et les règles IATA sur les noms et les bébés sans siège : un écart suffit à bloquer l'émission.
-
-La question qui structure ce mémoire :
+Le moteur ne peut pas débiter un montant différent sans prévenir le client. Il ne peut pas non plus jeter le panier. S'ajoutent ISO 4217 et les règles IATA sur les noms / bébés sans siège : un écart suffit à bloquer l'émission.
 
 \vspace{0.4cm}
 \begin{quote}
@@ -27,14 +25,8 @@ La question qui structure ce mémoire :
 \end{quote}
 \vspace{0.4cm}
 
-La réponse retenue en production combine une API Node.js (Sequelize) et des interfaces Nuxt~3 / Vue~3 en TypeScript, organisées de façon modulaire.
+En production, la réponse retenue combine une API Node.js (Sequelize) et des interfaces Nuxt~3 / Vue~3 en TypeScript.
 
-\section{Organisation du Mémoire}
+\section{Plan du document}
 
-Le document compte trois parties.
-
-La \textbf{première} situe Everbloo, l'équipe et le socle technique de Metis, puis pose les quatre hypothèses de conception.
-
-La \textbf{deuxième} décrit les livraisons qui répondent à la problématique : adaptateurs canoniques, moteur de recherche, terminal cryptique, retarification interactive (\textit{reshopping}), réconciliation des passagers, multi-devises et tests automatisés.
-
-La \textbf{troisième} confronte ces choix aux résultats et à trois incidents de production. Elle revient aussi sur l'organisation du travail et les compétences mobilisées, avant les perspectives sur l'évolution de la distribution aérienne.
+Trois parties : contexte Everbloo / stack Metis et les quatre pistes de conception ; livraisons (adaptateurs, recherche, terminal cryptique, reshopping, appairage passagers, multi-devises, tests) ; résultats, trois incidents de prod, organisation du travail, et le lien avec le RNCP.

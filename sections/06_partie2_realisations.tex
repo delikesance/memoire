@@ -1,7 +1,7 @@
-\part{Réalisations Techniques, Résolution de la Problématique}
+\part{Réalisations}
 \label{part:realisations}
 
-\chapter{Intégration Hybride des Protocoles GDS et IATA NDC}
+\chapter{GDS et NDC dans le même moteur}
 \label{chap:integration_gds_ndc}
 
 \section{Expérience Utilisateur et Moteur de Recherche Metis Connect}
@@ -19,7 +19,7 @@ La figure \ref{fig:metis_recherche} montre l'interface principale, développée 
 
 L'écran couvre allers simples, allers-retours et multi-destinations. L'utilisateur renseigne la composition (adultes \texttt{ADT}, enfants \texttt{CHD}, bébés sans siège \texttt{INF}) et choisit tarifs publics ou négociés. Des filtres par compagnies et alliances mettent à jour l'affichage sans recharger la page.
 
-\section{Couche d'Abstraction Canonique via le Patron Adaptateur}
+\section{Normalisation des offres via adaptateurs}
 
 Pour éviter de saupoudrer le frontend de \texttt{if} par transporteur, j'ai introduit une couche d'adaptateurs. Sabre renvoie SOAP ou texte brut ; les passerelles NDC directes (Air France-KLM, British Airways, Aegean, Turkish) répondent en JSON ou XML.
 
@@ -155,7 +155,7 @@ Une mauvaise coordination produit des doubles écritures passives --- ou des éc
 
 Un dossier de transport vit plusieurs semaines ou mois, avec des changements externes (horaires, annulation partielle). Dans \texttt{retrieve.controller.js}, la fonction \texttt{keepOnlyMatchingTravelers} réconcilie les passagers rafraîchis depuis le GDS distant avec l'état local, pour éviter de corrompre les enregistrements quand plusieurs agents ouvrent le même dossier.
 
-\chapter{Cycle Transactionnel de Réservation et Retarification Temps Réel}
+\chapter{Réservation, checkout et retarification}
 \label{chap:booking_reshop}
 
 \section{Détection et Gestion des Écarts Tarifaires (Reshopping)}
@@ -271,7 +271,7 @@ Le frontend intercepte cette réponse métier et ouvre \texttt{PriceChangeConfir
 \label{fig:modal_price_change}
 \end{figure}
 
-\section{Algorithme Déterministe de Réconciliation des Passagers}
+\section{Appairage des passagers avant OrderCreate}
 
 En début de projet, les rejets NDC (Air France, British Airways) étaient fréquents. Les XML d'erreur montraient souvent un détail de saisie : prénom accentué (« Éléonore »), apostrophe (« D'ALMEIDA »), bébé sans siège sans balise de rattachement adulte. Quand un voyageur était retiré du panier, des bagages restaient parfois accrochés à un identifiant fantôme.
 
@@ -375,7 +375,7 @@ export function matchesPaxRefId(
 }
 \end{lstlisting}
 
-\chapter{Optimisation du Moteur de Recherche et Filtrage Multi-Compagnies}
+\chapter{Filtrage multi-compagnies et perfs recherche}
 \label{chap:moteur_recherche}
 
 \section{Composant de Filtrage et Persistance des Préférences}
@@ -392,7 +392,7 @@ Le goulot reste la latence des fournisseurs. Dans \texttt{api-aerial}, \texttt{c
 
 Deux autres réglages : paramètre \texttt{'W'} injecté dans les requêtes Sabre pour privilégier les directs (demande fréquente en voyage d'affaires) ; dates normalisées en ISO 8601 via \texttt{createDepartureWindow}, pour que Sabre et NDC interprètent la même fenêtre horaire.
 
-\chapter{Architecture Financière et Traitement Asynchrone Multi-Devises}
+\chapter{Multi-devises et calculs tarifaires}
 \label{chap:architecture_financiere}
 
 \section{Résolution Asynchrone de la Devise Point de Vente}
@@ -409,7 +409,7 @@ Le multi-devises impose ISO 4217. \texttt{formatPrice} et \texttt{OrderRecap.vue
 
 Pour les taxes aéroportuaires, on applique l'arrondi bancaire au pair le plus proche (\textit{banker's rounding}). Contrairement à \texttt{Math.round}, qui pousse toujours les demis vers le haut et biaise les totaux sur de gros volumes, l'arrondi bancaire alterne vers le pair. Objectif : égalité stricte entre total facturé et somme des taxes, sans centime parasite.
 
-\chapter{Back-Office d'Administration et Gouvernance des Agences}
+\chapter{Back-Office et paramétrage des agences}
 \label{chap:backoffice_admin}
 
 \section{Interface de Paramétrage des Points de Vente}
@@ -424,7 +424,7 @@ Importer plusieurs centaines de collaborateurs d'un coup saturait les quotas SOA
 
 \texttt{DialogUpdateSabre.vue} et \texttt{DialogImportProfil.vue} découpent l'import en paquets de 50 profils (\textit{chunking}). Coupure réseau au milieu : on reprend uniquement le paquet interrompu, pas tout l'import.
 
-\chapter{Tests Automatisés et Résultats en Production}
+\chapter{Tests et mesures en production}
 \label{chap:assurance_qualite}
 
 \section{Suite de Tests Unitaires et d'Intégration}
