@@ -3,28 +3,34 @@
 
 \section{Bilan du Projet et Enseignements}
 
-Ces 38 mois de travail sur \textbf{Metis} m'ont permis de mesurer le fossé qui sépare la théorie logicielle de la production réelle. Faire cohabiter les vieux protocoles des GDS (Sabre et Amadeus en sessions synchrones) avec les API web NDC a demandé des compromis permanents entre rapidité, sécurité financière et confort pour l'utilisateur.
+Sur 38 mois, Metis a surtout montré l'écart entre modèles propres et production : sessions GDS synchrones (Sabre, Amadeus) d'un côté, API NDC sans état de l'autre. Les arbitrages se sont joués entre latence, risque financier (ADM) et parcours utilisateur.
 
-Les choix techniques faits sur le projet ont permis d'apporter des réponses simples à des problèmes complexes :
-L'adaptateur canonique (\texttt{SabreAdapter.ts}) a permis de brancher de nouvelles compagnies comme British Airways, Aegean et Turkish sans modifier le code de nos composants de panier. L'intercepteur Axios avec file d'attente a réglé les déconnexions intempestives lors du renouvellement des jetons OAuth2. L'algorithme de réconciliation des passagers (\texttt{matchesPaxRefId}) a fait chuter le taux de rejet des réservations NDC sous les 0,1\,\%, et la fenêtre de confirmation tarifaire a permis de sauver 92\,\% des paniers touchés par une hausse de prix de dernière minute. Enfin, le découpage propre des segments passifs a évité le moindre avis de débit (ADM) sur plus de deux ans d'exploitation.
+Ce qui a tenu :
+\begin{itemize}[leftmargin=*, itemsep=4pt]
+\item \texttt{SabreAdapter.ts} a permis de brancher British Airways, Aegean et Turkish sans retoucher les composants panier ;
+\item l'intercepteur Axios avec file d'attente a coupé les déconnexions au refresh OAuth2 ;
+\item \texttt{matchesPaxRefId} a ramené le rejet NDC sous 0,1\,\% ;
+\item la modale de confirmation tarifaire a sauvé 92\,\% des paniers touchés par une hausse de dernière minute ;
+\item le découpage des segments passifs a évité tout ADM pour double écriture sur plus de deux ans.
+\end{itemize}
 
 \section{Bilan des Compétences RNCP 36137}
 
-Cette alternance valide l'ensemble des compétences attendues pour le titre d'\textbf{Expert en Ingénierie Informatique} (Niveau 7 -- RNCP 36137) :
+Cette formation couvre les compétences du titre d'\textbf{Expert en Ingénierie Informatique} (Niveau 7 -- RNCP 36137) :
 
 \begin{itemize}[leftmargin=*, itemsep=4pt]
-\item \textbf{Architecture logicielle et systèmes distribués :} Définition de contrats d'interface stricts en TypeScript, découpage modulaire des services et gestion de traitements asynchrones non-bloquants sous Node.js.
-\item \textbf{Développement full-stack et performance :} Maîtrise de Nuxt~3, Vue~3 et Pinia, avec une réduction de 28\,\% du temps de réponse moyen sur le moteur de recherche.
-\item \textbf{Qualité et rigueur financière :} Mise en place de tests unitaires et d'intégration (Mocha, Chai, Playwright) garantissant le respect de la norme ISO 4217 sur les devises et la validation des flux IATA.
-\item \textbf{Posture d'ingénieur et travail d'équipe :} Diagnostic d'incidents sous pression, collaboration quotidienne avec les Product Owners et mentorat technique auprès des développeurs de l'équipe en Tunisie.
+\item \textbf{Architecture logicielle et systèmes distribués :} contrats d'interface TypeScript, découpage modulaire des services, traitements asynchrones non bloquants sous Node.js.
+\item \textbf{Développement full-stack et performance :} Nuxt~3, Vue~3, Pinia ; réduction de 28\,\% du temps de réponse moyen sur le moteur de recherche.
+\item \textbf{Qualité et rigueur financière :} tests Mocha, Chai, Playwright ; conformité ISO 4217 et contrôles de flux IATA.
+\item \textbf{Posture d'ingénieur et travail d'équipe :} diagnostic sous pression, collaboration quotidienne avec les PO, accompagnement technique de l'équipe en Tunisie.
 \end{itemize}
 
 \section{Perspectives d'Évolution}
 
-Pour la suite de la plateforme Metis, deux évolutions majeures se dessinent :
+Deux chantiers structurants pour la suite de Metis.
 
-D'abord, l'arrivée du standard \textbf{IATA ONE Order}, qui va regrouper le PNR, le billet et les options dans une commande unique. Grâce au modèle pivot que nous avons mis en place, cette évolution pourra se faire sans casser les interfaces de réservation existantes.
+\textbf{IATA ONE Order} regroupera PNR, billet et options dans une commande unique. Le modèle pivot déjà en place limite l'impact sur les écrans de réservation existants.
 
-Ensuite, le déploiement d'un traçage distribué avec \textbf{OpenTelemetry}, pour mesurer précisément les temps de réponse de chaque compagnie aérienne et repérer plus vite les ralentissements chez les transporteurs.
+Le déploiement d'\textbf{OpenTelemetry} permettra de mesurer la latence par transporteur et d'isoler plus vite les ralentissements amont.
 
-Ces trois années chez Everbloo m'ont appris qu'un bon système logiciel ne se mesure pas au nombre de frameworks utilisés, mais à sa capacité à tourner sans accroc en production et à rendre service aux utilisateurs. C'est avec cette vision pragmatique que je poursuis mon parcours comme \textbf{Architecte Systèmes d'Information et Lead Developer}.
+Je poursuis comme \textbf{Architecte Systèmes d'Information et Lead Developer}, avec le même critère : un système se juge à ce qu'il fait en production pour les utilisateurs, pas à la liste des frameworks du \texttt{package.json}.

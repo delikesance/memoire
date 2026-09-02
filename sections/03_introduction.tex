@@ -3,21 +3,21 @@
 
 \section{Contexte Sectoriel et Évolution de la Distribution Aérienne}
 
-Dans le secteur du voyage d'affaires (B2B), réserver et émettre un billet d'avion est une opération critique. Les plateformes de réservation doivent interroger des inventaires aériens mondiaux en quelques secondes, tout en garantissant des prix justes au centime près pour la comptabilité des agences.
+Dans le voyage d'affaires (B2B), émettre un billet d'avion reste une opération critique. Les plateformes doivent interroger des inventaires mondiaux en quelques secondes et produire des montants exacts au centime près pour la comptabilité des agences.
 
-Pendant des décennies, cette distribution est passée exclusivement par les \textit{Global Distribution Systems} (GDS), principalement Sabre et Amadeus. Ces systèmes fonctionnent avec des protocoles anciens issus de la norme EDIFACT. Leur principe repose sur des sessions synchrones avec état : le serveur garde la main sur le dossier passager (\textit{Passenger Name Record} ou PNR), bloque les sièges temporairement, puis valide la réservation étape par étape jusqu'à l'émission du billet.
+Pendant des décennies, cette distribution a transité exclusivement par les \textit{Global Distribution Systems} (GDS), surtout Sabre et Amadeus. Ces systèmes s'appuient sur des protocoles issus d'EDIFACT et sur des sessions synchrones avec état : le serveur tient le dossier passager (\textit{Passenger Name Record} ou PNR), bloque temporairement les sièges, puis enchaîne les étapes jusqu'à l'émission.
 
-Depuis quelques années, les compagnies aériennes déploient la norme \textbf{NDC} (\textit{New Distribution Capability}) de l'IATA. Bâtie sur des API web modernes (REST JSON et XML), la norme NDC permet aux transporteurs de vendre leurs vols en direct sans passer par les GDS. Les compagnies peuvent ainsi faire varier leurs tarifs en temps réel (\textit{dynamic pricing}) et vendre des options personnalisées (\textit{ancillaries} : bagages, choix du siège, coupe-file).
+Les compagnies déploient depuis plusieurs années la norme \textbf{NDC} (\textit{New Distribution Capability}) de l'IATA. Basée sur des API web (REST JSON et XML), NDC leur permet de vendre en direct, hors GDS. Elles peuvent ajuster les tarifs en temps réel (\textit{dynamic pricing}) et pousser des options payantes (\textit{ancillaries} : bagages, siège, coupe-file).
 
-Pour la plateforme \textbf{Metis} --- développée par Everbloo pour équiper des réseaux d'agences comme TourCom et des entreprises ---, cette transition pose un vrai défi technique. Notre application doit faire cohabiter deux mondes : d'un côté, les flux GDS traditionnels en commandes cryptiques ou SOAP avec verrouillage de places ; de l'autre, les flux NDC directs (Air France-KLM, British Airways, Lufthansa Group), qui fonctionnent par requêtes web sans état avec des offres temporaires valables seulement quelques minutes.
+Pour \textbf{Metis} --- développée par Everbloo pour des réseaux d'agences comme TourCom et pour des entreprises ---, le problème est concret. L'application doit faire tenir ensemble des flux GDS (commandes cryptiques ou SOAP, verrouillage de places) et des flux NDC directs (Air France-KLM, British Airways, Lufthansa Group), où l'offre n'est qu'un jeton temporaire valable quelques minutes.
 
 \section{Énonciation de la Problématique d'Ingénierie}
 
-Dans la pratique quotidienne de Metis Connect, un utilisateur cherche un vol, sélectionne ses options, remplit les noms des voyageurs et passe au paiement. Entre le moment où il voit le prix et le moment où il valide son panier, les serveurs des compagnies peuvent fermer une classe tarifaire ou modifier le montant des taxes d'aéroport.
+Sur Metis Connect, le parcours type est simple : recherche, sélection, saisie des voyageurs, paiement. Entre l'affichage du prix et la validation du panier, le transporteur peut fermer une classe ou recalculer les taxes d'aéroport.
 
-Face à ces changements de dernière minute, le moteur de réservation ne peut pas débiter un montant différent sans prévenir le client, mais il ne doit pas non plus annuler brutalement la commande en effaçant toutes les informations déjà saisies. S'ajoutent à cela les conversions de devises (norme ISO 4217) et les règles de saisie IATA sur les noms et les bébés sans siège, dont le non-respect bloque immédiatement l'émission du billet.
+Le moteur ne peut pas débiter un montant différent sans prévenir le client. Il ne peut pas non plus jeter le panier et effacer toute la saisie. S'ajoutent les conversions ISO 4217 et les règles IATA sur les noms et les bébés sans siège : un écart suffit à bloquer l'émission.
 
-La problématique centrale de mes travaux d'ingénierie s'énonce ainsi :
+La question qui structure ce mémoire :
 
 \vspace{0.4cm}
 \begin{quote}
@@ -27,14 +27,14 @@ La problématique centrale de mes travaux d'ingénierie s'énonce ainsi :
 \end{quote}
 \vspace{0.4cm}
 
-Pour résoudre cette équation en production, j'ai conçu une architecture modulaire associant une API backend Node.js (avec Sequelize) et des interfaces Nuxt~3 / Vue~3 en TypeScript.
+La réponse retenue en production combine une API Node.js (Sequelize) et des interfaces Nuxt~3 / Vue~3 en TypeScript, organisées de façon modulaire.
 
 \section{Organisation du Mémoire}
 
-Le mémoire est organisé en trois grandes parties :
+Le document compte trois parties.
 
-La \textbf{première partie} présente l'entreprise Everbloo, l'organisation de l'équipe et le socle technique de Metis, avant de détailler les quatre hypothèses de conception retenues pour le projet.
+La \textbf{première} situe Everbloo, l'équipe et le socle technique de Metis, puis pose les quatre hypothèses de conception.
 
-La \textbf{deuxième partie} détaille les développements réalisés pour résoudre la problématique : adaptateurs canoniques, moteur de recherche graphique, terminal cryptique pour les billettistes, retarification interactive (\textit{reshopping}), réconciliation des passagers, gestion multi-devises et suite de tests automatisés.
+La \textbf{deuxième} décrit les livraisons qui répondent à la problématique : adaptateurs canoniques, moteur de recherche, terminal cryptique, retarification interactive (\textit{reshopping}), réconciliation des passagers, multi-devises et tests automatisés.
 
-La \textbf{troisième partie} dresse le bilan des résultats obtenus. J'y analyse trois incidents concrets rencontrés en production et j'explique comment ces 38 mois d'alternance ont forgé ma façon de travailler, de gérer la pression en production et de concevoir des systèmes fiables. Le document se termine par un bilan de compétences et les perspectives d'évolution de la distribution aérienne.
+La \textbf{troisième} confronte ces choix aux résultats et à trois incidents de production. Elle revient aussi sur l'organisation du travail et les compétences mobilisées, avant les perspectives sur l'évolution de la distribution aérienne.

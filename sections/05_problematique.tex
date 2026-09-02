@@ -3,14 +3,17 @@
 
 \section{Énonciation du Défi d'Ingénierie}
 
-Dans la distribution aérienne B2B, les agences de voyages et les entreprises attendent une plateforme rapide, des prix justes au centime près et des réservations sans bug. En pratique, la moindre erreur technique se paie comptant : elle bloque une vente au comptoir, empêche un voyageur d'affaires de partir ou génère des pénalités financières.
+En distribution aérienne B2B, les agences et les entreprises attendent une plateforme rapide, des montants exacts au centime et des réservations qui passent. Une erreur technique se paie cash : vente bloquée au comptoir, voyageur d'affaires coincé, ou pénalité financière.
 
-Faire cohabiter dans un même moteur les flux des GDS historiques (Sabre, Amadeus) et les flux directs IATA NDC nous a confrontés à trois écarts techniques majeurs :
-D'abord, les sessions : Sabre fonctionne avec des sessions synchrones avec état (\textit{stateful}) et bloque les places à l'avance, alors que les API NDC fonctionnent par requêtes web sans état (\textit{stateless}) avec des offres temporaires (\texttt{OfferID}) valables quelques minutes.
-Ensuite, la volatilité des prix : entre le moment où l'utilisateur choisit son vol et celui où il valide son paiement après avoir saisi tous les passagers, les compagnies peuvent fermer une classe tarifaire ou modifier le barème des taxes. Un système trop rigide renvoie une erreur brute et oblige l'utilisateur à tout ressaisir.
-Enfin, la validation des passagers : les API NDC rejettent la commande au moindre caractère accentué mal nettoyé, au moindre identifiant passager (\texttt{PaxRefID}) mal aligné avec un bagage, ou si un bébé sans siège n'est pas explicitement rattaché à son accompagnant. S'y ajoutent la conversion des devises (norme ISO 4217) et l'obligation d'inscrire des segments passifs dans les GDS pour les logiciels comptables des agences, sous peine d'écoper d'avis de débit (ADM).
+Faire cohabiter GDS (Sabre, Amadeus) et NDC IATA dans le même moteur révèle trois écarts structurants.
 
-La problématique centrale de mes travaux d'ingénierie s'énonce ainsi :
+Les sessions d'abord. Sabre travaille en sessions synchrones avec état (\textit{stateful}) et bloque les places en amont. Les API NDC envoient des requêtes web sans état (\textit{stateless}) : l'offre (\texttt{OfferID}) expire en quelques minutes.
+
+Les prix ensuite. Entre la sélection du vol et le paiement --- une fois les passagers saisis --- le transporteur peut fermer une classe ou recalculer les taxes. Un système trop raide renvoie une erreur brute et force la ressaisie complète.
+
+La validation des passagers enfin. Les API NDC rejettent dès qu'un accent est mal nettoyé, qu'un \texttt{PaxRefID} ne colle pas à un bagage, ou qu'un bébé sans siège n'est pas rattaché à son accompagnant. S'y ajoutent ISO 4217 pour les devises et l'obligation d'écrire des segments passifs dans les GDS pour les logiciels comptables des agences --- sinon ADM.
+
+La question centrale :
 
 \vspace{0.4cm}
 \begin{quote}
@@ -22,28 +25,28 @@ La problématique centrale de mes travaux d'ingénierie s'énonce ainsi :
 
 \section{Formulation et Articulation des Hypothèses de Conception}
 
-Pour répondre à ces contraintes sans réécrire l'application à chaque nouveau connecteur, nous avons formulé quatre hypothèses de conception, en intégrant dès le départ leurs limites opérationnelles.
+Pour répondre sans réécrire l'appli à chaque nouveau connecteur, quatre hypothèses de conception ont été posées, avec leurs limites dès le départ.
 
 \subsection{Hypothèse 1 : Abstraction Canonique via le Patron Adaptateur}
 
-Le premier problème vient de la diversité des formats renvoyés par les fournisseurs. Nous posons l'hypothèse qu'une couche d'adaptateurs (comme \texttt{SabreAdapter.ts}) — chargée de convertir les flux SOAP de Sabre et les flux JSON/XML de NDC vers un modèle pivot unique (\texttt{CanonicalFlightOffer}) — permet de brancher de nouveaux transporteurs (British Airways, Turkish Airlines, Aegean) sans toucher aux écrans du frontend ni à la logique du panier.
+Les formats renvoyés par les fournisseurs divergent. Hypothèse : une couche d'adaptateurs (\texttt{SabreAdapter.ts}) convertit SOAP Sabre et JSON/XML NDC vers un modèle pivot (\texttt{CanonicalFlightOffer}). On branche alors British Airways, Turkish Airlines ou Aegean sans retoucher les écrans ni la logique panier.
 
-Le risque identifié dès la conception est le piège du « plus petit dénominateur commun » : si le modèle pivot est trop strict, on risque de perdre des informations propres à certaines compagnies (comme les options de bagages spécifiques ou les règles de surclassement). L'objectif est donc de trouver le bon équilibre entre standardisation et flexibilité.
+Risque connu : le « plus petit dénominateur commun ». Un modèle trop strict efface des infos propres à certaines compagnies (bagages spécifiques, règles de surclassement). Il faut tenir l'équilibre entre standardisation et flexibilité.
 
 \subsection{Hypothèse 2 : Réconciliation Déterministe des Passagers et Pipeline Multi-Devises}
 
-Les rejets de commandes par les compagnies viennent le plus souvent de désaccords entre les identifiants des voyageurs et leurs bagages, ou d'erreurs d'arrondi sur les taxes. Nous posons l'hypothèse qu'un algorithme déterministe d'appairage (\texttt{matchesPaxRefId}), couplé à une gestion asynchrone des devises conforme à la norme ISO 4217, permet d'éliminer la quasi-totalité des rejets techniques.
+La plupart des rejets viennent d'identifiants voyageurs mal alignés avec les bagages, ou d'arrondis de taxes. Hypothèse : un appairage déterministe (\texttt{matchesPaxRefId}) plus une gestion asynchrone des devises ISO 4217 élimine l'essentiel des rejets techniques.
 
-Ce traitement doit nettoyer les caractères accentués, lier obligatoirement chaque bébé sans siège à un adulte (\texttt{associatedAdultRefId}) et supprimer les bagages orphelins. Nous savions que ce choix aurait des limites sur les cas particuliers (comme deux passagers portant exactement les mêmes nom et prénom au sein d'une même famille), qui exigeraient des garde-fous supplémentaires. L'hypothèse est jugée validée si le taux de rejet applicatif descend sous les 0,1\,\% en production.
+Le traitement nettoie les accents, force le lien bébé $\rightarrow$ adulte (\texttt{associatedAdultRefId}) et purge les bagages orphelins. Limite assumée : deux passagers au même nom/prénom sur un même dossier. Critère de validation : taux de rejet applicatif sous 0,1\,\% en production.
 
 \subsection{Hypothèse 3 : Moteur Réactif de Retarification avec Validation Interactive}
 
-L'arrêt brutal d'une réservation lors d'une hausse tarifaire est la première cause d'abandon de panier. Nous posons l'hypothèse qu'un mécanisme de retarification asynchrone interceptant le code HTTP 409 (\textit{Conflict}), associé à une boîte de dialogue (\texttt{PriceChangeConfirmDialog.vue}) qui détaille l'écart de prix tout en gardant en mémoire les passagers saisis dans le store Pinia, permet de sauver la réservation sans dégrader l'expérience utilisateur.
+Une hausse tarifaire qui coupe net la réservation est la première cause d'abandon de panier. Hypothèse : un reprice asynchrone qui intercepte le HTTP 409 (\textit{Conflict}), avec la modale \texttt{PriceChangeConfirmDialog.vue} (écart détaillé, passagers conservés dans Pinia), sauve la commande sans casser le parcours.
 
-La limite évidente de cette hypothèse est l'ampleur de la variation : si la hausse est de quelques euros de taxes, le voyageur accepte généralement l'écart ; en revanche, si le vol complet disparaît ou si le prix bondit de 300\,€, la réinitialisation de la recherche reste inévitable. L'hypothèse est validée si au moins 90\,\% des paniers réajustés sur de faibles écarts aboutissent à une émission.
+Limite claire : l'ampleur de l'écart. Quelques euros de taxes, le voyageur accepte souvent ; disparition du vol ou +300\,€, il faut relancer la recherche. Critère : au moins 90\,\% des paniers réajustés sur de faibles écarts aboutissent à une émission.
 
 \subsection{Hypothèse 4 : Découplage des Points de Vente et Maîtrise des Segments Passifs}
 
-Le risque financier des agences (ADM) provient principalement de l'écriture en doublon de segments passifs sur Sabre et Amadeus pour un même billet NDC. Nous posons l'hypothèse qu'un découplage des paramètres par point de vente (POS) en base de données, associé à une règle d'exclusion automatique interdisant d'écrire sur Amadeus quand le dossier est traité sur Sabre, supprime totalement ce risque de litige.
+Le risque ADM vient surtout de segments passifs écrits en double sur Sabre et Amadeus pour un même billet NDC. Hypothèse : paramètres découpés par point de vente (POS) en base, plus une règle d'exclusion (pas d'écriture Amadeus si le dossier est traité sur Sabre), éliminent ce litige.
 
-Le compromis ici réside dans la gestion des logiciels comptables des agences (Gestour, IEnterprise), qui ont chacun leurs propres tolérances de parsing. L'hypothèse est vérifiée par l'absence d'ADM pour double écriture sur l'ensemble du parc d'agences pendant deux ans d'exploitation.
+Compromis : les ERP agences (Gestour, IEnterprise) ont chacun leurs tolérances de parsing. Vérification : zéro ADM pour double écriture sur le parc pendant deux ans d'exploitation.

@@ -11,11 +11,11 @@
 \contentsline {figure}{\numberline {3.1}{\ignorespaces Architecture des services et flux de données de la plateforme Metis}}{7}{figure.3.1}%
 \addvspace {10\p@ }
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {5.1}{\ignorespaces Interface de recherche de vols Metis Connect}}{12}{figure.5.1}%
-\contentsline {figure}{\numberline {5.2}{\ignorespaces Émulateur de terminal cryptique Sabre}}{15}{figure.5.2}%
+\contentsline {figure}{\numberline {5.1}{\ignorespaces Interface de recherche de vols Metis Connect}}{11}{figure.5.1}%
+\contentsline {figure}{\numberline {5.2}{\ignorespaces Émulateur de terminal cryptique Sabre}}{14}{figure.5.2}%
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {6.1}{\ignorespaces Orchestration asynchrone de la retarification lors de la commande de billet}}{17}{figure.6.1}%
-\contentsline {figure}{\numberline {6.2}{\ignorespaces Dialogue de confirmation d'écart tarifaire}}{18}{figure.6.2}%
+\contentsline {figure}{\numberline {6.1}{\ignorespaces Séquence asynchrone de la retarification lors de la commande de billet}}{16}{figure.6.1}%
+\contentsline {figure}{\numberline {6.2}{\ignorespaces Dialogue de confirmation d'écart tarifaire}}{17}{figure.6.2}%
 \addvspace {10\p@ }
 \addvspace {10\p@ }
 \addvspace {10\p@ }
